@@ -7,7 +7,8 @@ dictWords = file.readlines()
 dictWords = [word[:len(word)-1].strip() for word in dictWords]
 
 while True:
-    sentence = input("Enter sentence to spellcheck: ")
+    #get input and convert it to lowercase
+    sentence = input("Enter sentence to spellcheck: ").lower()
     #get rid of all leading and trailing whitespaces
     sentence = sentence.strip()
     #re pattern is used to recognise anything that is not a digit or a letter (alphanumeric)
@@ -18,8 +19,6 @@ while True:
     sentenceWords = sentence.split(" ")
     #get rid of all the empty string literals from the list
     sentenceWords = list(filter(lambda x: x != '', sentenceWords))
-    #convert each word to lowercase
-    sentenceWords = list(map(lambda x: x.lower(), sentenceWords))
 
     #the number of correctly spelt words in incremented every time we encounter such a word in the input
     correctWords = 0
@@ -37,7 +36,7 @@ while True:
     print("Number of words:", totalWords)
     print("Number of correctly spelt words:", correctWords)
     print("Number of incorrectly spelt words:", incorrectWords)
-    choice = input("Press q [enter] to quit or any other key to go again:")
+    choice = input("Press q [enter] to quit or any other key to go again: ")
     if choice == 'q':
         #exit loop
         break
