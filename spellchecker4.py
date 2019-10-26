@@ -1,6 +1,7 @@
 import re
 import time
 import datetime
+from difflib import SequenceMatcher
 
 file = open("EnglishWords.txt", 'r')
 #storing each line in the file as a separate element in a list
@@ -20,6 +21,19 @@ def getTextFromFile(filename):
         print("ERROR: File not found!")
     #return the content of the file in lowercase
     return content.lower()
+
+def getLikeliestWord(word):
+    #initialise the maxScore and corresponding maxScoreWord variables
+    maxScore = 0.0
+    maxScoreWord = ""
+    for dictWord in dictWords:#iterate over every word in the list that contains all the valid words
+        score = SequenceMatcher(None, word, dictWord).ratio()
+        if score > maxScore:
+            #if current score is greater than previously encountered max, the max becomes current
+            #additionally, the maxScoreWord is assigned the corresponding word from the list
+            maxScore = score
+            maxScoreWord = dictWord
+    return maxScoreWord
 
 def processInput(sentence, filename):
     sentence = sentence.strip()
@@ -45,35 +59,48 @@ def processInput(sentence, filename):
         if word in dictWords:
             correctWords += 1
         else:
-            print("\n"+word+" not found \n")
             while True:
-                print("1. Ignore the word.")
-                print("2. Mark the word as incorrect.")
-                print("3. Add word to dictionary. \n")
+                print("\n  W O R D   N O T   F O U N D\n")
+                print("\n"+word+" not found \n")
+                likeliestWord = getLikeliestWord(word)
+                print("Did you mean "+likeliestWord)
+                choice = input("Enter [y] or [n]: ").lower()[0]#using [0] in case they type "yes" or "no"
+                if choice == "n":
+                    while True:
+                        print("\n  W O R D   N O T   F O U N D\n")
+                        print("\n"+word+" not found \n")
+                        print("1. Ignore the word.")
+                        print("2. Mark the word as incorrect.")
+                        print("3. Add word to dictionary. \n")
 
-                choice = input("Enter choice: ")
-                if choice == "1":
-                    #encapsulate the word with '!'
-                    ignoredWords += 1
-                    sentenceWords[index] = "!"+word+"!"
+                        choice = input("Enter choice: ")
+                        if choice == "1":
+                            #encapsulate the word with '!'
+                            ignoredWords += 1
+                            sentenceWords[index] = "!"+word+"!"
+                            break
+                        elif choice == "2":
+                            #encapsulate the word with '?'
+                            markedWords += 1
+                            sentenceWords[index] = "?"+word+"?"
+                            break
+                        elif choice == "3":
+                            #encapsulate the word with '*'
+                            #add the word to the dictionary file
+                            addedWords += 1
+                            dictFile = open("EnglishWords.txt", 'a+')
+                            dictFile.write(word+"\n")
+                            dictFile.close()
+                            sentenceWords[index] = "*"+word+"*"
+                            break
+                        else:
+                            #if the choice is not valid, loop again and display choice menu
+                            print("ERROR: Choice not Found! \n")
                     break
-                elif choice == "2":
-                    #encapsulate the word with '?'
-                    markedWords += 1
-                    sentenceWords[index] = "?"+word+"?"
+                elif choice == "y":
+                    sentenceWords[index] = likeliestWord
                     break
-                elif choice == "3":
-                    #encapsulate the word with '*'
-                    #add the word to the dictionary file
-                    addedWords += 1
-                    dictFile = open("EnglishWords.txt", 'a+')
-                    dictFile.write(word+"\n")
-                    dictFile.close()
-                    sentenceWords[index] = "*"+word+"*"
-                    break
-                else:
-                    #if the choice is not valid, loop again and display choice menu
-                    print("ERROR: Choice not Found! \n")
+                print("ERROR: Invalid choice!")
                     
 
     incorrectWords = totalWords - correctWords
@@ -111,6 +138,7 @@ while True:
     print()
     startTime = time.time()
     if choice == "1":
+        print("\n  L O A D   F I L E \n")
         #filename is changed if they choose to provide the input from a file
         filename = input("Enter the name of the file to spellcheck: ")
         sentence = getTextFromFile(filename)
@@ -119,6 +147,7 @@ while True:
             #try getting the input from the user again
             continue
     elif choice == "2":
+        print("\n  I N P U T \n")
         #get input from shell
         sentence = input("Enter sentence to spellcheck: ").lower()
     elif choice == "0":
