@@ -4,7 +4,6 @@ import datetime
 from difflib import SequenceMatcher
 
 file = open("EnglishWords.txt", 'r')
-#storing each line in the file as a separate element in a list
 dictWords = file.readlines()
 #getting rid of the '\n' in each element by getting rid of the last two characters
 #also get rid of all the leading and trailing whitespaces in each line of the file (in case there are any)
@@ -19,11 +18,9 @@ def getTextFromFile(filename):
     except:
         #file was not found
         print("ERROR: File not found!")
-    #return the content of the file in lowercase
     return content.lower()
 
 def getLikeliestWord(word):
-    #initialise the maxScore and corresponding maxScoreWord variables
     maxScore = 0.0
     maxScoreWord = ""
     for dictWord in dictWords:#iterate over every word in the list that contains all the valid words
@@ -123,7 +120,6 @@ def processInput(sentence, filename):
     file.write("\t Number added to dictionary: "+str(addedWords)+"\n")
     file.write("\t Number marked: "+str(markedWords)+"\n\n")
     file.write(outputString)
-
 
 
 while True:
