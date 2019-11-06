@@ -121,7 +121,6 @@ def processInput(sentence, filename):
     file.write("\t Number marked: "+str(markedWords)+"\n\n")
     file.write(outputString)
 
-
 while True:
     sentence = ""
     #if user chooses to input without file, then default filename is set to this
