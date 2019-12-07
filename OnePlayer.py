@@ -15,7 +15,7 @@ PLAYER_SPEED = 15
 BRICK_WIDTH = 200
 BRICK_HEIGHT = 20
 
-BALL_SPEED = 3
+BALL_SPEED = 2
 
 
 class OneP(object):
@@ -50,7 +50,7 @@ class OneP(object):
 
         #make a ball in the center of the screen
         self.Ball = self.DrawCircle(window_centerX, window_centerY, 15, '#99ff99')
-        self.BallXDir = 0#random.choice([-1, 0, 1])
+        self.BallXDir = random.choice([-1, 1])
         self.BallYDir = 1
 
         #make label instructing user how to start game
@@ -64,24 +64,25 @@ class OneP(object):
         self.master.bind('<space>', self.StartGame)
         self.master.after(1, self.BallMovement)
 
-    def CheckCollisionX(self, pos1, pos2):
-        '''Get the x ranges of the two objects, convert that to a set,
-            and then see if they're intersecting'''
+    '''def CheckCollisionX(self, pos1, pos2):
         intersect = set(range(int(pos1[0]), int(pos1[2]))).intersection(range(int(pos2[0]), int(pos2[2])))
         return intersect
 
     def CheckCollisionY(self, pos1, pos2):
-        '''Get the y ranges of the two objects, convert that to a set,
-        and then see if they're intersecting'''
         intersect = set(range(int(pos1[1]), int(pos1[3]))).intersection(range(int(pos2[1]), int(pos2[3])))
-        return intersect
+        return intersect'''
+
+    def CheckCollision(self, pos1, pos2):
+        if pos1[0] < pos2[2] and pos1[2] > pos2[0] and pos1[1] < pos2[3] and pos1[3] > pos2[1]:
+            return True
+        return False
         
     def BallMovement(self):
         if self.GamePlaying:
             ballPos = self.canvas.coords(self.Ball)
             playerPos = self.canvas.coords(self.Player)
             #ball_player_inter = set(range(int(ballPos[0]), int(ballPos[2]))).intersection(range(int(playerPos[0]), int(playerPos[2])))
-            ball_player_collision = self.CheckCollisionX(ballPos, playerPos)
+            ball_player_collision = self.CheckCollision(ballPos, playerPos)
             #detect collisions with left, right and top walls respectively
             newPosX = self.BallXDir * BALL_SPEED
             newPosY = self.BallYDir * BALL_SPEED
@@ -99,22 +100,35 @@ class OneP(object):
                                                  font="Helvetica 60 bold italic")
 
             #detect collision with the player
-            elif len(ball_player_collision) > 0 and ballPos[3] >= playerPos[1]:
+            elif ball_player_collision and ballPos[3] >= playerPos[1]:
                 self.BallYDir *= -1
 
             #detect collision with bricks
-            for brick in exposedBricks:
-                brickPos = self.canvas.coords(brick[0])
-                ball_brick_collisionX = self.CheckCollisionX(brickPos, ballPos)
-                ball_brick_collisionY = self.CheckCollisionY(brickPos, ballPos)
-                if ball_brick_collisionX:
-                    #change the X direction of the ball and then delete the brick that the ball collided with
-                    self.BallXDir *= -1
-                    #print(ball_brick_collisionX)
-                if ball_brick_collisionY:
+            for (r, row) in enumerate(self.Bricks):
+                done = False
+                for (c, col) in enumerate(row):
+                    brick = self.Bricks[r][c]
+                    if brick[1]:
+                        brickPos = self.canvas.coords(brick[0])
+                        ball_brick_collision = self.CheckCollision(brickPos, ballPos)
+                        if ball_brick_collision:
+                            #change the Y direction of the ball and then delete the brick that the ball collided with
+                            self.BallYDir *= -1
+                            #index = brick[2]#index of brick in the overall list of Bricks (self.Bricks)
+                            self.Bricks[r][c][1] = False
+                            #self.canvas.delete(self.Bricks[index[0]][index[1]][0])
+                            self.canvas.delete(self.Bricks[r][c][0])
+                            done = True
+                            break
+                if done:
+                    break
+                '''if len(ball_brick_collisionY) > 0:
                     #change the Y direction of the ball and then delete the brick that the ball collided with
-                    self.BallYDir *= -1
-                    #print(ball_brick_collisionY)
+                    self.BallXDir *= -1
+                    self.Bricks[index[0]][index[1]][1] = False
+                    self.canvas.delete(self.Bricks[index[0]][index[1]][0])
+                    #self.Bricks[index][1] = False
+                    #print(ball_brick_collisionY)'''
                 
             
             if not self.GameOver:
@@ -193,6 +207,7 @@ class OneP(object):
         for row, val in enumerate(self.Bricks):
             for col in range(len(val)):
                 if len(self.GetAliveNeighbours(row, col)) != 8:
+                    val[col].append([row, col])#index of the exposed brick in the self.Bricks list
                     exposed.append(val[col])
         return exposed
             
