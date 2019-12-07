@@ -6,7 +6,7 @@ WINDOW_HEIGHT = 700
 class Application(object):
     def __init__(self, master):
         self.master = master
-        self.master.title("Brick Breaker Menu")
+        self.master.title("Brick Breaker - Menu")
         self.master.resizable(False, False)
         self.canvas = Canvas(self.master,
                              cursor='pirate',
@@ -17,6 +17,7 @@ class Application(object):
         self.canvas.configure(background='#006666')
 
         self.title_label = Label(self.master,
+                                 cursor='pirate',
                                  font='Helvetica 40 bold',
                                  background='#006666',
                                  text="BRICK\nBREAKER")
