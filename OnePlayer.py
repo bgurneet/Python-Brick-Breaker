@@ -5,17 +5,17 @@ WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
 BOTTOM_PADDING = 20
 TOP_PADDING = 50
-X_PADDING = 20
+X_PADDING = 50
 
 
 PLAYER_WIDTH = 60
 PLAYER_HEIGHT = 20
-PLAYER_SPEED = 10
+PLAYER_SPEED = 15
 
-BRICK_WIDTH = 60
+BRICK_WIDTH = 200
 BRICK_HEIGHT = 20
 
-BALL_SPEED = 5
+BALL_SPEED = 3
 
 
 class OneP(object):
@@ -45,47 +45,84 @@ class OneP(object):
         self.master.bind("<Right>", self.RightKeyPressed)
         
         self.Bricks = []
+        self.TopLevelBricks = []
         self.ProduceBricks(10)
 
         #make a ball in the center of the screen
         self.Ball = self.DrawCircle(window_centerX, window_centerY, 15, '#99ff99')
-        self.BallXDir = 1 #random.choice([-1, 0, 1])
-        self.BallYDir = 0
+        self.BallXDir = 0#random.choice([-1, 0, 1])
+        self.BallYDir = 1
 
         #make label instructing user how to start game
-        '''self.start_label = Label(self.master,
-                                 cursor='none',
-                                 font='Helvetica 60 bold italic',
-                                 background='#006666',
-                                 anchor=N,
-                                 text="Press Spacebar to Start Game")
-        self.start_label.place(relx=0.5, rely=0.55, anchor=CENTER)'''
         self.start_msg = self.canvas.create_text((window_centerX, window_centerY + 100),
                                                  text="Press Spacebar to Start Game",
                                                  font="Helvetica 50 bold italic")
 
         self.GamePlaying = False
+        self.GameOver = False
         #start the game when the user first presses space
         self.master.bind('<space>', self.StartGame)
         self.master.after(1, self.BallMovement)
-        print("HEREEEEEEEEEEEEEEE")
 
+    def CheckCollisionX(self, pos1, pos2):
+        '''Get the x ranges of the two objects, convert that to a set,
+            and then see if they're intersecting'''
+        intersect = set(range(int(pos1[0]), int(pos1[2]))).intersection(range(int(pos2[0]), int(pos2[2])))
+        return intersect
+
+    def CheckCollisionY(self, pos1, pos2):
+        '''Get the y ranges of the two objects, convert that to a set,
+        and then see if they're intersecting'''
+        intersect = set(range(int(pos1[1]), int(pos1[3]))).intersection(range(int(pos2[1]), int(pos2[3])))
+        return intersect
+        
     def BallMovement(self):
         if self.GamePlaying:
             ballPos = self.canvas.coords(self.Ball)
-            print(ballPos)
+            playerPos = self.canvas.coords(self.Player)
+            #ball_player_inter = set(range(int(ballPos[0]), int(ballPos[2]))).intersection(range(int(playerPos[0]), int(playerPos[2])))
+            ball_player_collision = self.CheckCollisionX(ballPos, playerPos)
             #detect collisions with left, right and top walls respectively
             newPosX = self.BallXDir * BALL_SPEED
             newPosY = self.BallYDir * BALL_SPEED
-            if ballPos[2] > WINDOW_WIDTH or ballPos[0] < 0:
-                print("HERE")
-                newPosX *= -1 #change the direction
-            elif ballPos[1] < 0 or ballPos[3] > WINDOW_HEIGHT:
-                newPosY *= -1
-            print(newPosX, newPosY)
-            self.canvas.move(self.Ball, newPosX, newPosY)
+            exposedBricks = self.GetExposedBricks()
+            if ballPos[2] + newPosX > WINDOW_WIDTH or ballPos[0] + newPosX < 0:
+                self.BallXDir *= -1 #change the direction
+            elif ballPos[1] + newPosY < 0: #or ballPos[3] + newPosY > WINDOW_HEIGHT:
+                self.BallYDir *= -1
+            #detect collision with bottom wall
+            elif ballPos[3] + newPosY > WINDOW_HEIGHT:
+                self.GameOver = True
+                self.GamePlaying = False
+                self.end_msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 100),
+                                                 text="GAME OVER!",
+                                                 font="Helvetica 60 bold italic")
+
+            #detect collision with the player
+            elif len(ball_player_collision) > 0 and ballPos[3] >= playerPos[1]:
+                self.BallYDir *= -1
+
+            #detect collision with bricks
+            for brick in exposedBricks:
+                brickPos = self.canvas.coords(brick[0])
+                ball_brick_collisionX = self.CheckCollisionX(brickPos, ballPos)
+                ball_brick_collisionY = self.CheckCollisionY(brickPos, ballPos)
+                if ball_brick_collisionX:
+                    #change the X direction of the ball and then delete the brick that the ball collided with
+                    self.BallXDir *= -1
+                    #print(ball_brick_collisionX)
+                if ball_brick_collisionY:
+                    #change the Y direction of the ball and then delete the brick that the ball collided with
+                    self.BallYDir *= -1
+                    #print(ball_brick_collisionY)
+                
             
-        self.master.after(1, self.BallMovement)
+            if not self.GameOver:
+                newPosX = self.BallXDir * BALL_SPEED
+                newPosY = self.BallYDir * BALL_SPEED
+                self.canvas.move(self.Ball, newPosX, newPosY)
+            
+        self.master.after(int(1000/60), self.BallMovement)
 
     def StartGame(self, event):
         if not self.GamePlaying:
@@ -107,30 +144,58 @@ class OneP(object):
         brick = self.canvas.create_rectangle(x1, y1, x2, y2, fill=colour)
         return brick
 
+
     def ProduceBricks(self, rows):
+        cols = (WINDOW_WIDTH - (2 * X_PADDING)) // BRICK_WIDTH
+        print(cols)
         colours = ['#dc3020', '#f09336', '#fffd55', '#2e74f6', '#eb42f7', '#74f94c']
-        #colourIndex = random.randint(0, len(colours) - 1)
-        colourIndex = 5
+        colourIndex = random.randint(0, len(colours) - 1)
         currentY = TOP_PADDING
-        while True:
-            #rowColour = random.choice(colours)
-            #print(currentY + BRICK_HEIGHT)
-            currentX = TOP_PADDING
+        counter = 0
+        for r in range(rows):
+            row = []
+            currentY = TOP_PADDING + (r * BRICK_HEIGHT)
             currentEndY = currentY + BRICK_HEIGHT
-            if currentEndY > TOP_PADDING + (rows * BRICK_HEIGHT):
-                break
-            while True:
+            for c in range(cols):
                 brickColour = colours[colourIndex]
                 colourIndex = colourIndex + 1 if colourIndex < len(colours) - 1 else 0
+                currentX = X_PADDING + (c * BRICK_WIDTH)
                 currentEndX = currentX + BRICK_WIDTH
-                if currentEndX <= WINDOW_WIDTH - X_PADDING:
-                    brick = self.ProduceBrick(brickColour, currentX, currentY,
-                                              currentEndX, currentEndY)
-                    self.Bricks.append(brick)
-                    currentX = currentEndX
-                else:
-                    currentY = currentEndY
-                    break
+                brick = self.ProduceBrick(brickColour, currentX, currentY,
+                                          currentEndX, currentEndY)
+                row.append([brick, True]) #the True represents that the brick is visible
+            self.Bricks.append(row)
+        print(self.Bricks)
+
+    def GetAliveNeighbours(self, row, col):
+        alive_neighbours = []
+        try:
+            neighbours = [self.Bricks[row - 1][col - 1],
+                          self.Bricks[row - 1][col],
+                          self.Bricks[row - 1][col + 1],
+                          self.Bricks[row][col - 1],
+                          self.Bricks[row][col + 1],
+                          self.Bricks[row + 1][col - 1],
+                          self.Bricks[row + 1][col],
+                          self.Bricks[row + 1][col + 1]]
+            alive_neighbours = list(filter(lambda brick: brick[1], neighbours))
+        except:
+            return alive_neighbours
+        return alive_neighbours
+        
+        
+
+        
+    def GetExposedBricks(self):
+        #return a list of the bricks that can be touched by the ball at the moment
+        #if a brick is not surrounded by bricks on all 8 sides, it must be exposed
+        exposed = []
+        for row, val in enumerate(self.Bricks):
+            for col in range(len(val)):
+                if len(self.GetAliveNeighbours(row, col)) != 8:
+                    exposed.append(val[col])
+        return exposed
+            
 
     def LeftKeyPressed(self, event):
         playerPos = self.canvas.coords(self.Player)
@@ -144,6 +209,7 @@ class OneP(object):
         newPosX = playerPos[0] + 1
         if newPosX <= WINDOW_WIDTH:
             self.canvas.move(self.Player, PLAYER_SPEED, 0)
+
         
 
 def run():
