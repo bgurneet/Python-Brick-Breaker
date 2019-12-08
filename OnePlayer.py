@@ -64,6 +64,14 @@ class OneP(object):
         self.master.bind('<space>', self.StartGame)
         self.master.after(1, self.BallMovement)
 
+    '''def CheckCollisionX(self, pos1, pos2):
+        intersect = set(range(int(pos1[0]), int(pos1[2]))).intersection(range(int(pos2[0]), int(pos2[2])))
+        return intersect
+
+    def CheckCollisionY(self, pos1, pos2):
+        intersect = set(range(int(pos1[1]), int(pos1[3]))).intersection(range(int(pos2[1]), int(pos2[3])))
+        return intersect'''
+
     def CheckCollision(self, pos1, pos2):
         if pos1[0] < pos2[2] and pos1[2] > pos2[0] and pos1[1] < pos2[3] and pos1[3] > pos2[1]:
             return True
