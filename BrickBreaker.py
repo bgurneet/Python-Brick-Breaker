@@ -1,5 +1,6 @@
 from tkinter import *
 
+
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 700
 
@@ -27,7 +28,9 @@ class Application(object):
         #additionally I wanted to ensure cross-platform functionality
         self.OnePlayerBtn = Button(self.master,
                                    cursor='trek',
-                                   highlightbackground='#00e6e6',
+                                   background="#00e6e6",
+									activebackground='#009999',
+									width=0,
                                    relief=GROOVE,
                                    font="Helvetica 30",
                                    command=self.OnePlayerBtnPressed,
@@ -37,23 +40,27 @@ class Application(object):
         self.OnePlayerBtn.bind("<Leave>", self.BtnOneLeave)
 
         self.TwoPlayerBtn = Button(self.master,
-                                   cursor='trek',
-                                   highlightbackground='#00e6e6',
-                                   relief=GROOVE,
-                                   font="Helvetica 30",
-                                   command=self.TwoPlayerBtnPressed,
-                                   text="2 Player")
+									cursor='trek',
+									background="#00e6e6",
+									activebackground='#009999',
+									width=0,
+                                    relief=GROOVE,
+                                    font="Helvetica 30",
+                                    command=self.TwoPlayerBtnPressed,
+                                    text="2 Player")
         self.TwoPlayerBtn.place(relx=0.5, rely=0.6, anchor=CENTER)
         self.TwoPlayerBtn.bind("<Enter>", self.BtnTwoEnter)
         self.TwoPlayerBtn.bind("<Leave>", self.BtnTwoLeave)
 
         self.SettingsBtn = Button(self.master,
-                                  cursor='trek',
-                                  highlightbackground="#00e6e6",
-                                  relief=GROOVE,
-                                  font="Helvetica 30",
-                                  command=self.SettingsBtnPressed,
-                                  text="Settings")
+                                    cursor='trek',
+                                    background="#00e6e6",
+									activebackground='#009999',
+									width=0,
+                                    relief=GROOVE,
+                                    font="Helvetica 30",
+                                    command=self.SettingsBtnPressed,
+                                    text="Settings")
         self.SettingsBtn.place(relx=0.5, rely=0.7, anchor=CENTER)
         self.SettingsBtn.bind("<Enter>", self.BtnSettingsEnter)
         self.SettingsBtn.bind("<Leave>", self.BtnSettingsLeave)
@@ -63,33 +70,27 @@ class Application(object):
         print("One Player Pressed")
 
     def BtnOneEnter(self, event):
-        self.OnePlayerBtn['highlightbackground'] = '#009999'
         self.OnePlayerBtn['font'] = "Helvetica 30 italic"
         
     def BtnOneLeave(self, event):
-        self.OnePlayerBtn['highlightbackground'] = '#00e6e6'
         self.OnePlayerBtn['font'] = "Helvetica 30"
 
     def TwoPlayerBtnPressed(self):
         print("Two Player Pressed")
 
     def BtnTwoEnter(self, event):
-        self.TwoPlayerBtn['highlightbackground'] = '#009999'
         self.TwoPlayerBtn['font'] = "Helvetica 30 italic"
         
     def BtnTwoLeave(self, event):
-        self.TwoPlayerBtn['highlightbackground'] = '#00e6e6'
         self.TwoPlayerBtn['font'] = "Helvetica 30"
 
     def SettingsBtnPressed(self):
         print("Settings Pressed")
 
     def BtnSettingsEnter(self, event):
-        self.SettingsBtn["highlightbackground"] = "#009999"
         self.SettingsBtn["font"] = "Helvetica 30 italic"
 
     def BtnSettingsLeave(self, event):
-        self.SettingsBtn["highlightbackground"] = "#009999"
         self.SettingsBtn["font"] = "Helvetica 30"
         
         
