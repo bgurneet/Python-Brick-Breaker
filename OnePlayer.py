@@ -5,14 +5,14 @@ WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
 BOTTOM_PADDING = 20
 TOP_PADDING = 50
-X_PADDING = 50
+X_PADDING = 40
 
 
 PLAYER_WIDTH = 60
 PLAYER_HEIGHT = 20
 PLAYER_SPEED = 15
 
-BRICK_WIDTH = 200
+BRICK_WIDTH = 100
 BRICK_HEIGHT = 20
 
 BALL_SPEED = 2
@@ -64,29 +64,20 @@ class OneP(object):
         self.master.bind('<space>', self.StartGame)
         self.master.after(1, self.BallMovement)
 
-    '''def CheckCollisionX(self, pos1, pos2):
-        intersect = set(range(int(pos1[0]), int(pos1[2]))).intersection(range(int(pos2[0]), int(pos2[2])))
-        return intersect
-
-    def CheckCollisionY(self, pos1, pos2):
-        intersect = set(range(int(pos1[1]), int(pos1[3]))).intersection(range(int(pos2[1]), int(pos2[3])))
-        return intersect'''
-
     def CheckCollision(self, pos1, pos2):
         if pos1[0] < pos2[2] and pos1[2] > pos2[0] and pos1[1] < pos2[3] and pos1[3] > pos2[1]:
             return True
         return False
 
     def GetCollisionState(self, pos1, pos2):
-        print(pos1, pos2)
         collision_state = 0
-        if pos1[2] <= pos2[0] + 5:
+        if pos1[2] < pos2[0] + 5:
             collision_state = 1
-        if pos1[3] <= pos2[1] + 5:
+        if pos1[3] < pos2[1] + 5:
             collision_state = 2
-        if pos1[0] >= pos2[2] - 5:
+        if pos1[0] > pos2[2] - 5:
             collision_state = 3
-        if pos1[1] >= pos2[3] - 5:
+        if pos1[1] > pos2[3] - 5:
             collision_state = 4
         return collision_state
         
@@ -125,11 +116,9 @@ class OneP(object):
                         ball_brick_collision = self.CheckCollision(brickPos, ballPos)
                         if ball_brick_collision:
                             collision_state = self.GetCollisionState(ballPos, brickPos)
-                            print(collision_state)
                             if collision_state == 1 or collision_state == 3:
                                 self.BallXDir *= -1
-                                print("Changing x dir", self.BallXDir)
-                            elif collision_state == 2 or collision_state == 4:
+                            if collision_state == 2 or collision_state == 4:
                                 self.BallYDir *= -1
                             self.Bricks[r][c][1] = False
                             self.canvas.delete(self.Bricks[r][c][0])
