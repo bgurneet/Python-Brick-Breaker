@@ -51,7 +51,7 @@ class OneP(object):
     
         #make a ball in the center of the screen
         self.Ball = self.DrawCircle(window_centerX, window_centerY, 15, '#99ff99')
-        self.BallXDir = -1#random.choice([-1, 1])
+        self.BallXDir = random.choice([-1, 1])
         self.BallYDir = 1
 
         #make label instructing user how to start game
@@ -154,18 +154,36 @@ class OneP(object):
                 newPosX = self.BallXDir * BALL_SPEED
                 newPosY = self.BallYDir * BALL_SPEED
                 self.canvas.move(self.Ball, newPosX, newPosY)
+        if self.CheckGameWon():
+            self.GameWon()
+        else:
+            self.UpdateDifficulty()        
 
-        self.UpdateDifficulty()        
+            self.master.after(int(1000/60), self.BallMovement)
 
-        self.master.after(int(1000/60), self.BallMovement)
+    def GameWon(self):
+        self.GameOver = True
+        self.GamePlaying = False
+        self.end_msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 100),
+                                                 text="You Won!",
+                                                 font="Helvetica 60 bold italic")
 
+    def CheckGameWon(self):
+        gamewon = True
+        for row in range(len(self.Bricks)):
+            for col in range(len(self.Bricks[row])):
+                #check if there exists a single 
+                brick = self.Bricks[row][col]
+                if brick[1]:
+                    gamewon = False
+        return gamewon
 
     def UpdateDifficulty(self):
         #factor in the pause time when using delta time
         currentTime = time() # in seconds
         #difficulty should be updated more frequently as the level increases
         deltaTime = currentTime - self.lastDiffUpdateTime
-        requiredDelta = 5#30 * (5 - self.Level)
+        requiredDelta = 30 * (5 - self.Level)
         if deltaTime >= requiredDelta:
             self.lastDiffUpdateTime = currentTime
             # move all the blocks down one block height
