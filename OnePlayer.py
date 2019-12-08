@@ -46,8 +46,8 @@ class OneP(object):
         self.master.bind("<Right>", self.RightKeyPressed)
         
         self.Bricks = []
-        self.TopLevelBricks = []
-        self.ProduceBricks(10)
+        self.Level = 1
+        self.ProduceBricks(self.Level * 2)
     
         #make a ball in the center of the screen
         self.Ball = self.DrawCircle(window_centerX, window_centerY, 15, '#99ff99')
@@ -83,10 +83,8 @@ class OneP(object):
 		
 
         # look at the time for the purposes of making the game difficult as a function of time
-        self.time = time()
-		#also need to know the amount of time the game was paused for so that it doesn't factor into the difficulty aspect of the game
-        self.pause_starttime = 0
-        self.pause_endtime = 0
+        self.lastDiffUpdateTime = 0
+
 
     def CheckCollision(self, pos1, pos2):
         if pos1[0] < pos2[2] and pos1[2] > pos2[0] and pos1[1] < pos2[3] and pos1[3] > pos2[1]:
@@ -156,8 +154,30 @@ class OneP(object):
                 newPosX = self.BallXDir * BALL_SPEED
                 newPosY = self.BallYDir * BALL_SPEED
                 self.canvas.move(self.Ball, newPosX, newPosY)
-            
+
+        self.UpdateDifficulty()        
+
         self.master.after(int(1000/60), self.BallMovement)
+
+
+    def UpdateDifficulty(self):
+        #factor in the pause time when using delta time
+        currentTime = time() # in seconds
+        #difficulty should be updated more frequently as the level increases
+        deltaTime = currentTime - self.lastDiffUpdateTime
+        requiredDelta = 5#30 * (5 - self.Level)
+        if deltaTime >= requiredDelta:
+            self.lastDiffUpdateTime = currentTime
+            # move all the blocks down one block height
+            self.MoveBlocksDown(1)
+
+    def MoveBlocksDown(self, levels):
+        #levels is the number of block heights we move the blocks down by
+        for row in range(len(self.Bricks)):
+            for col in range(len(self.Bricks[row])):
+                brick = self.Bricks[row][col]
+                if brick[1]:
+                    self.canvas.move(brick[0], 0, levels * BRICK_HEIGHT)
 
     def StartGame(self, event):
         if not self.GamePlaying:
@@ -168,6 +188,7 @@ class OneP(object):
             self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
                                                  text="Press Spacebar to Start Game",
                                                  font="Helvetica 50 bold italic")
+            self.lastDiffUpdateTime = time()
             
 
     def DrawCircle(self, x, y, radius, colour):
