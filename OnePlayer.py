@@ -47,7 +47,7 @@ class OneP(object):
         self.Bricks = []
         self.TopLevelBricks = []
         self.ProduceBricks(10)
-
+    
         #make a ball in the center of the screen
         self.Ball = self.DrawCircle(window_centerX, window_centerY, 15, '#99ff99')
         self.BallXDir = random.choice([-1, 1])
@@ -76,6 +76,19 @@ class OneP(object):
         if pos1[0] < pos2[2] and pos1[2] > pos2[0] and pos1[1] < pos2[3] and pos1[3] > pos2[1]:
             return True
         return False
+
+    def GetCollisionState(self, pos1, pos2):
+        print(pos1, pos2)
+        collision_state = 0
+        if pos1[2] <= pos2[0] + 5:
+            collision_state = 1
+        if pos1[3] <= pos2[1] + 5:
+            collision_state = 2
+        if pos1[0] >= pos2[2] - 5:
+            collision_state = 3
+        if pos1[1] >= pos2[3] - 5:
+            collision_state = 4
+        return collision_state
         
     def BallMovement(self):
         if self.GamePlaying:
@@ -86,7 +99,6 @@ class OneP(object):
             #detect collisions with left, right and top walls respectively
             newPosX = self.BallXDir * BALL_SPEED
             newPosY = self.BallYDir * BALL_SPEED
-            exposedBricks = self.GetExposedBricks()
             if ballPos[2] + newPosX > WINDOW_WIDTH or ballPos[0] + newPosX < 0:
                 self.BallXDir *= -1 #change the direction
             elif ballPos[1] + newPosY < 0: #or ballPos[3] + newPosY > WINDOW_HEIGHT:
@@ -100,7 +112,7 @@ class OneP(object):
                                                  font="Helvetica 60 bold italic")
 
             #detect collision with the player
-            elif ball_player_collision and ballPos[3] >= playerPos[1]:
+            elif ball_player_collision != 0:
                 self.BallYDir *= -1
 
             #detect collision with bricks
@@ -112,25 +124,19 @@ class OneP(object):
                         brickPos = self.canvas.coords(brick[0])
                         ball_brick_collision = self.CheckCollision(brickPos, ballPos)
                         if ball_brick_collision:
-                            #change the Y direction of the ball and then delete the brick that the ball collided with
-                            self.BallYDir *= -1
-                            #index = brick[2]#index of brick in the overall list of Bricks (self.Bricks)
+                            collision_state = self.GetCollisionState(ballPos, brickPos)
+                            print(collision_state)
+                            if collision_state == 1 or collision_state == 3:
+                                self.BallXDir *= -1
+                            elif collision_state == 2 or collision_state == 4:
+                                self.BallYDir *= -1
                             self.Bricks[r][c][1] = False
-                            #self.canvas.delete(self.Bricks[index[0]][index[1]][0])
                             self.canvas.delete(self.Bricks[r][c][0])
                             done = True
                             break
                 if done:
                     break
-                '''if len(ball_brick_collisionY) > 0:
-                    #change the Y direction of the ball and then delete the brick that the ball collided with
-                    self.BallXDir *= -1
-                    self.Bricks[index[0]][index[1]][1] = False
-                    self.canvas.delete(self.Bricks[index[0]][index[1]][0])
-                    #self.Bricks[index][1] = False
-                    #print(ball_brick_collisionY)'''
-                
-            
+            #update the ball position if the game is not over yet
             if not self.GameOver:
                 newPosX = self.BallXDir * BALL_SPEED
                 newPosY = self.BallYDir * BALL_SPEED
@@ -161,7 +167,6 @@ class OneP(object):
 
     def ProduceBricks(self, rows):
         cols = (WINDOW_WIDTH - (2 * X_PADDING)) // BRICK_WIDTH
-        print(cols)
         colours = ['#dc3020', '#f09336', '#fffd55', '#2e74f6', '#eb42f7', '#74f94c']
         colourIndex = random.randint(0, len(colours) - 1)
         currentY = TOP_PADDING
@@ -179,9 +184,8 @@ class OneP(object):
                                           currentEndX, currentEndY)
                 row.append([brick, True]) #the True represents that the brick is visible
             self.Bricks.append(row)
-        print(self.Bricks)
 
-    def GetAliveNeighbours(self, row, col):
+    '''def GetAliveNeighbours(self, row, col):
         alive_neighbours = []
         try:
             neighbours = [self.Bricks[row - 1][col - 1],
@@ -209,7 +213,7 @@ class OneP(object):
                 if len(self.GetAliveNeighbours(row, col)) != 8:
                     val[col].append([row, col])#index of the exposed brick in the self.Bricks list
                     exposed.append(val[col])
-        return exposed
+        return exposed'''
             
 
     def LeftKeyPressed(self, event):
@@ -217,11 +221,10 @@ class OneP(object):
         newPosX = playerPos[0] - PLAYER_SPEED
         if newPosX >= 0:
             self.canvas.move(self.Player, -PLAYER_SPEED, 0)
-        print(playerPos)
 
     def RightKeyPressed(self, event):
         playerPos = self.canvas.coords(self.Player)
-        newPosX = playerPos[0] + 1
+        newPosX = playerPos[0] + PLAYER_SPEED
         if newPosX <= WINDOW_WIDTH:
             self.canvas.move(self.Player, PLAYER_SPEED, 0)
 
