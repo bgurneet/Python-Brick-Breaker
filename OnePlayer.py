@@ -258,4 +258,4 @@ def run():
     root = Tk()
     app = OneP(root)
     root.mainloop()
-run()
+#run()

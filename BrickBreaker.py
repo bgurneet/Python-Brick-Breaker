@@ -1,5 +1,5 @@
 from tkinter import *
-
+from OnePlayer import *
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 700
@@ -68,6 +68,8 @@ class Application(object):
 
     def OnePlayerBtnPressed(self):
         print("One Player Pressed")
+        self.master.destroy()
+        run()
 
     def BtnOneEnter(self, event):
         self.OnePlayerBtn['font'] = "Helvetica 30 italic"
