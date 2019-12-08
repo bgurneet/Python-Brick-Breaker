@@ -16,7 +16,6 @@ PLAYER_SPEED = 15
 BRICK_WIDTH = 100
 BRICK_HEIGHT = 20
 
-BALL_SPEED = 2
 
 
 class OneP(object):
@@ -51,6 +50,7 @@ class OneP(object):
     
         #make a ball in the center of the screen
         self.Ball = self.DrawCircle(window_centerX, window_centerY, 15, '#99ff99')
+        self.BallSpeed = 2
         self.BallXDir = random.choice([-1, 1])
         self.BallYDir = 1
 
@@ -110,8 +110,8 @@ class OneP(object):
             #ball_player_inter = set(range(int(ballPos[0]), int(ballPos[2]))).intersection(range(int(playerPos[0]), int(playerPos[2])))
             ball_player_collision = self.CheckCollision(ballPos, playerPos)
             #detect collisions with left, right and top walls respectively
-            newPosX = self.BallXDir * BALL_SPEED
-            newPosY = self.BallYDir * BALL_SPEED
+            newPosX = self.BallXDir * self.BallSpeed
+            newPosY = self.BallYDir * self.BallSpeed
             if ballPos[2] + newPosX > WINDOW_WIDTH or ballPos[0] + newPosX < 0:
                 self.BallXDir *= -1 #change the direction
             elif ballPos[1] + newPosY < 0: #or ballPos[3] + newPosY > WINDOW_HEIGHT:
@@ -151,15 +151,33 @@ class OneP(object):
                     break
             #update the ball position if the game is not over yet
             if not self.GameOver:
-                newPosX = self.BallXDir * BALL_SPEED
-                newPosY = self.BallYDir * BALL_SPEED
+                newPosX = self.BallXDir * self.BallSpeed
+                newPosY = self.BallYDir * self.BallSpeed
                 self.canvas.move(self.Ball, newPosX, newPosY)
-        if self.CheckGameWon():
-            self.GameWon()
+        if self.CheckLevelFinished():
+            self.UpdateLevel()
         else:
             self.UpdateDifficulty()        
 
             self.master.after(int(1000/60), self.BallMovement)
+
+    def UpdateLevel(self):
+        if self.Level == 5:
+            self.GameWon()
+        else:
+            self.Level += 1
+            self.GamePlaying = False
+            self.ProduceBricks(self.Level * 2)
+            self.canvas.delete(self.Ball)
+            self.BallSpeed *= 1.5 * self.Level
+            self.canvas.delete(self.Ball)
+            self.canvas.update()
+            self.Ball = self.DrawCircle(window_centerX, window_centerY, 15, '#99ff99')
+            self.BallXDir = random.choice([-1, 1])
+            self.BallYDir = 1
+            self.canvas.update()
+            self.GamePlaying = True
+
 
     def GameWon(self):
         self.GameOver = True
@@ -168,15 +186,15 @@ class OneP(object):
                                                  text="You Won!",
                                                  font="Helvetica 60 bold italic")
 
-    def CheckGameWon(self):
-        gamewon = True
+    def CheckLevelFinished(self):
+        levelFinished = True
         for row in range(len(self.Bricks)):
             for col in range(len(self.Bricks[row])):
                 #check if there exists a single 
                 brick = self.Bricks[row][col]
                 if brick[1]:
-                    gamewon = False
-        return gamewon
+                    levelFinished = False
+        return levelFinished
 
     def UpdateDifficulty(self):
         #factor in the pause time when using delta time
