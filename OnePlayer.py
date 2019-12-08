@@ -50,7 +50,7 @@ class OneP(object):
     
         #make a ball in the center of the screen
         self.Ball = self.DrawCircle(window_centerX, window_centerY, 15, '#99ff99')
-        self.BallXDir = random.choice([-1, 1])
+        self.BallXDir = -1#random.choice([-1, 1])
         self.BallYDir = 1
 
         #make label instructing user how to start game
@@ -128,6 +128,7 @@ class OneP(object):
                             print(collision_state)
                             if collision_state == 1 or collision_state == 3:
                                 self.BallXDir *= -1
+                                print("Changing x dir", self.BallXDir)
                             elif collision_state == 2 or collision_state == 4:
                                 self.BallYDir *= -1
                             self.Bricks[r][c][1] = False
