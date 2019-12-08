@@ -199,8 +199,36 @@ class OneP(object):
 
     def StartGame(self, event):
         if not self.GamePlaying:
-            self.GamePlaying = True
             self.canvas.delete(self.start_msg)
+            self.canvas.update()
+            counterLabel = Label(self.master,
+                                 cursor='none',
+                                 font='Helvetica 50 bold italic',
+                                 background='#006666',
+                                 text='3...')
+            counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
+            self.master.update()
+            sleep(1)
+            counterLabel.destroy()
+            counterLabel = Label(self.master,
+                                 cursor='none',
+                                 font='Helvetica 50 bold italic',
+                                 background='#006666',
+                                 text='2...')
+            counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
+            self.master.update()
+            sleep(1)
+            counterLabel.destroy()
+            counterLabel = Label(self.master,
+                                 cursor='none',
+                                 font='Helvetica 50 bold italic',
+                                 background='#006666',
+                                 text='1...')
+            counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
+            self.master.update()
+            sleep(1)
+            counterLabel.destroy()
+            self.GamePlaying = True
         else:
             self.GamePlaying = False
             self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
