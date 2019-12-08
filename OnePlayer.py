@@ -1,5 +1,6 @@
 from tkinter import *
 import random
+from time import time, sleep
 
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
@@ -64,6 +65,29 @@ class OneP(object):
         self.master.bind('<space>', self.StartGame)
         self.master.after(1, self.BallMovement)
 
+        self.score_prefix_label = Label(self.master,
+                                 cursor='none',
+                                 font='Helvetica 20 italic',
+                                 background='#006666',
+                                 text='SCORE: ')
+        self.score_prefix_label.place(relx=0.92, rely=0, anchor=NE)
+
+        self.score = StringVar()
+        self.score.set(str(0))
+        self.score_label = Label(self.master,
+                                 cursor='none',
+                                 font='Helvetica 20 italic',
+                                 background='#006666',
+                                 textvariable=self.score)
+        self.score_label.place(relx=0.95, rely=0, anchor=NE)
+		
+
+        # look at the time for the purposes of making the game difficult as a function of time
+        self.time = time()
+		#also need to know the amount of time the game was paused for so that it doesn't factor into the difficulty aspect of the game
+        self.pause_starttime = 0
+        self.pause_endtime = 0
+
     def CheckCollision(self, pos1, pos2):
         if pos1[0] < pos2[2] and pos1[2] > pos2[0] and pos1[1] < pos2[3] and pos1[3] > pos2[1]:
             return True
@@ -115,6 +139,7 @@ class OneP(object):
                         brickPos = self.canvas.coords(brick[0])
                         ball_brick_collision = self.CheckCollision(brickPos, ballPos)
                         if ball_brick_collision:
+                            self.score.set(str(int(self.score.get()) + 10))
                             collision_state = self.GetCollisionState(ballPos, brickPos)
                             if collision_state == 1 or collision_state == 3:
                                 self.BallXDir *= -1
@@ -174,36 +199,6 @@ class OneP(object):
                                           currentEndX, currentEndY)
                 row.append([brick, True]) #the True represents that the brick is visible
             self.Bricks.append(row)
-
-    '''def GetAliveNeighbours(self, row, col):
-        alive_neighbours = []
-        try:
-            neighbours = [self.Bricks[row - 1][col - 1],
-                          self.Bricks[row - 1][col],
-                          self.Bricks[row - 1][col + 1],
-                          self.Bricks[row][col - 1],
-                          self.Bricks[row][col + 1],
-                          self.Bricks[row + 1][col - 1],
-                          self.Bricks[row + 1][col],
-                          self.Bricks[row + 1][col + 1]]
-            alive_neighbours = list(filter(lambda brick: brick[1], neighbours))
-        except:
-            return alive_neighbours
-        return alive_neighbours
-        
-        
-
-        
-    def GetExposedBricks(self):
-        #return a list of the bricks that can be touched by the ball at the moment
-        #if a brick is not surrounded by bricks on all 8 sides, it must be exposed
-        exposed = []
-        for row, val in enumerate(self.Bricks):
-            for col in range(len(val)):
-                if len(self.GetAliveNeighbours(row, col)) != 8:
-                    val[col].append([row, col])#index of the exposed brick in the self.Bricks list
-                    exposed.append(val[col])
-        return exposed'''
             
 
     def LeftKeyPressed(self, event):
