@@ -48,33 +48,93 @@ class OneP(object):
         self.Bricks = []
         self.Level = 0
         self.BallSpeed = 2
-        self.UpdateLevel()
 
         self.GamePlaying = False
         self.GameOver = False
         #start the game when the user first presses space
         self.master.bind('<space>', self.StartGame)
-        self.gamethread = self.master.after(1, self.BallMovement)
-
-        self.score_prefix_label = Label(self.master,
-                                 cursor='none',
-                                 font='Helvetica 20 italic',
-                                 background='#006666',
-                                 text='SCORE: ')
-        self.score_prefix_label.place(relx=0.92, rely=0, anchor=NE)
+        self.master.after(1, self.BallMovement)
 
         self.score = StringVar()
-        self.score.set(str(0))
+        self.score.set("Score: "+str(0))
         self.score_label = Label(self.master,
                                  cursor='none',
                                  font='Helvetica 20 italic',
                                  background='#006666',
                                  textvariable=self.score)
         self.score_label.place(relx=0.95, rely=0, anchor=NE)
+
+        self.level = StringVar()
+        self.level.set("Level: "+str(self.Level))
+        self.level_label = Label(self.master,
+                                 cursor='none',
+                                 font='Helvetica 20 italic',
+                                 background='#006666',
+                                 textvariable=self.level)
+        self.level_label.place(relx=0.5, rely=0, anchor=N)
+        
+        self.BallEffects = []
+        self.PlayerEffects = []
 		
 
         # look at the time for the purposes of making the game difficult as a function of time
         self.lastDiffUpdateTime = 0
+
+        self.Cheats = ['fire', 'ice', 'back', 'colours', 'guns']
+        self.master.bind('<Key>', self.ApplyCheats)
+        self.KeysPressed = []
+
+        self.UpdateLevel()
+
+    def ApplyCheats(self, event):
+        self.KeysPressed.append(event.char)
+        print(self.KeysPressed)
+
+        keysPressed = ''.join(self.KeysPressed).lower()#cheats are case-insensitive
+        for cheat in self.Cheats:
+            if cheat in keysPressed and cheat not in self.BallEffects and cheat not in self.PlayerEffects:
+                #reset this stack so that the same cheat is not applied continuously without user input
+                self.KeysPressed = []
+                if cheat == 'fire' and 'ice' not in self.BallEffects:
+                    #iceball and fireball effects cannot be applied at the same time
+                    #apply the fireball effect for 5 seconds
+                    self.master.after(1, lambda: self.ApplyFireball(5))
+                if cheat == 'ice' and 'fire' not in self.BallEffects:
+                    #apply the iceball effect for 5 seconds
+                    self.master.after(1, lambda: self.ApplyIceball(5))
+
+    def ApplyIceball(self, timecounter):
+        '''In this cheat, the ball does not destroy any bricks upon contact, it simply rebounds'''
+        ballColour = self.canvas.itemcget(self.Ball, "fill")
+        if timecounter != 0:
+            if ballColour != '#4eaed8':
+                self.BallEffects.append('ice')
+                self.canvas.itemconfig(self.Ball, fill='#4eaed8')
+            timecounter -= 1
+            self.master.after(1000, lambda: self.ApplyIceball(timecounter))
+        else:
+            #reset the colour of the ball and remove the cheat from active ball effects
+            self.BallEffects.remove('ice')
+            self.canvas.itemconfig(self.Ball, fill='#99ff99')
+
+    def ApplyFireball(self, timecounter):
+        '''In this cheat, the ball does not rebound when it collides with a brick, it destorys
+            everything in its path'''
+        ballColour = self.canvas.itemcget(self.Ball, "fill")
+        if timecounter != 0:
+            if ballColour != '#ff3333':
+                self.BallEffects.append('fire')
+                self.canvas.itemconfig(self.Ball, fill='#ff3333')
+            timecounter -= 1
+            self.master.after(1000, lambda: self.ApplyFireball(timecounter))
+        else:
+            #reset the colour of the ball and remove cheat from active ball effects
+            self.BallEffects.remove('fire')
+            self.canvas.itemconfig(self.Ball, fill='#99ff99')
+        
+                
+        
+            
 
     def UpdateLevel(self):
         if self.Level == 5:
@@ -86,6 +146,7 @@ class OneP(object):
                 self.BallSpeed *= 1.5 * self.Level
                 self.canvas.delete(self.Ball)
             self.Level += 1
+            self.level.set("Level: "+str(self.Level))
             self.GamePlaying = False
             self.ProduceBricks(self.Level * 2)
             self.canvas.update()
@@ -182,17 +243,18 @@ class OneP(object):
                         brickPos = self.canvas.coords(brick[0])
                         ball_brick_collision = self.CheckCollision(brickPos, ballPos)
                         if ball_brick_collision:
-                            print("Brick Colour: "+self.canvas.itemcget(brick[0], 'fill'))
-                            self.score.set(str(int(self.score.get()) + 10))
                             collision_state = self.GetCollisionState(ballPos, brickPos)
-                            if collision_state == 1 or collision_state == 3:
-                                self.BallXDir *= -1
-                            if collision_state == 2 or collision_state == 4:
-                                self.BallYDir *= -1
-                            self.Bricks[r][c][1] = False
-                            self.canvas.delete(self.Bricks[r][c][0])
-                            done = True
-                            break
+                            if not 'fire' in self.BallEffects:
+                                if collision_state == 1 or collision_state == 3:
+                                    self.BallXDir *= -1
+                                if collision_state == 2 or collision_state == 4:
+                                    self.BallYDir *= -1
+                            if 'ice' not in self.BallEffects:
+                                self.score.set("Score: "+str(int(self.score.get().split(": ")[1]) + 10))
+                                self.Bricks[r][c][1] = False
+                                self.canvas.delete(self.Bricks[r][c][0])
+                                done = True
+                                break
                 if done:
                     break
             #update the ball position if the game is not over yet
@@ -313,7 +375,7 @@ class OneP(object):
     def ProduceBricks(self, rows):
         cols = (WINDOW_WIDTH - (2 * X_PADDING)) // BRICK_WIDTH
         #colours = ['#dc3020', '#f09336', '#fffd55', '#2e74f6', '#eb42f7', '#74f94c']
-        colours = ['#ca2c5a', '#f7da57', '#4eaed8', '#439541', '#4d4d4d']
+        colours = ['#ff3333', '#f7da57', '#4eaed8', '#439541', '#4d4d4d']
         colourIndex = random.randint(0, len(colours) - 1)
         currentY = TOP_PADDING
         counter = 0
