@@ -192,6 +192,7 @@ class OneP(object):
             self.master.after(int(1000/60), self.BallMovement)
 
 
+
     def GameWon(self):
         self.GameOver = True
         self.GamePlaying = False
@@ -214,7 +215,7 @@ class OneP(object):
         currentTime = time() # in seconds
         #difficulty should be updated more frequently as the level increases
         deltaTime = currentTime - self.lastDiffUpdateTime
-        requiredDelta = 30 - (5 * self.Level)
+        requiredDelta = 1#30 - (5 * self.Level)
         if deltaTime >= requiredDelta:
             self.lastDiffUpdateTime = currentTime
             # move all the blocks down one block height
@@ -222,11 +223,26 @@ class OneP(object):
 
     def MoveBlocksDown(self, levels):
         #levels is the number of block heights we move the blocks down by
+        last_row = 0#used to check if the game has been lost due to the bricks moving too far down
+        #if the last brick is 8 brick heights above the player, the game has been lost
         for row in range(len(self.Bricks)):
             for col in range(len(self.Bricks[row])):
                 brick = self.Bricks[row][col]
                 if brick[1]:
                     self.canvas.move(brick[0], 0, levels * BRICK_HEIGHT)
+                    brickCoords = self.canvas.coords(brick[0])
+                    if last_row < brickCoords[3]:
+                        last_row = brickCoords[3]
+        if (self.canvas.coords(self.Player)[1] - last_row) <= BRICK_HEIGHT * 8:
+            #game has been lost bevause the bricks have come down beyond the arbitrarily defined point
+            self.GameLost()
+
+    def GameLost(self):
+        self.GameOver = True
+        self.GamePlaying = False
+        self.end_msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 100),
+                                                 text="You Lost!",
+                                                 font="Helvetica 60 bold italic")
 
     def StartGame(self, event):
         if not self.GamePlaying:
