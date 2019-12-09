@@ -36,9 +36,10 @@ class OneP(object):
         window_centerY = WINDOW_HEIGHT/2
         player_centerX = PLAYER_WIDTH/2
         player_centerY = PLAYER_HEIGHT/2
-        self.Player = self.canvas.create_rectangle(0.45*WINDOW_WIDTH,
+        
+        self.Player = self.canvas.create_oval(0.43*WINDOW_WIDTH,
                                                    WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
-                                                   0.55*WINDOW_WIDTH,
+                                                   0.57*WINDOW_WIDTH,
                                                    WINDOW_HEIGHT - BOTTOM_PADDING,
                                                    width=0, fill='blue')
         self.master.bind("<Left>", self.LeftKeyPressed)
@@ -53,7 +54,7 @@ class OneP(object):
         self.GameOver = False
         #start the game when the user first presses space
         self.master.bind('<space>', self.StartGame)
-        self.master.after(1, self.BallMovement)
+        self.gamethread = self.master.after(1, self.BallMovement)
 
         self.score_prefix_label = Label(self.master,
                                  cursor='none',
@@ -81,6 +82,7 @@ class OneP(object):
         else:
             if self.Level != 0:
                 #congratulate them for making it to the next level
+                self.LevelTransition()
                 self.BallSpeed *= 1.5 * self.Level
                 self.canvas.delete(self.Ball)
             self.Level += 1
@@ -88,14 +90,31 @@ class OneP(object):
             self.ProduceBricks(self.Level * 2)
             self.canvas.update()
             self.Ball = self.DrawCircle(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 15, '#99ff99')
-            self.BallXDir = random.uniform(-1, 1)#random.choice([-1, 1])
+            self.BallXDir = random.uniform(-1, 1)
             self.BallYDir = 1
             self.canvas.update()
             self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
                                                  text="Press Spacebar to Start Game",
                                                  font="Helvetica 50 bold italic")
             
-
+    def LevelTransition(self):
+        self.GamePlaying = False
+        msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
+                                                 text="Congratularions on finishing "+str(self.Level)+"!",
+                                                 font="Helvetica 50 bold italic")
+        sleep(3)
+        self.canvas.delete(msg)
+        self.canvas.update()
+        msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
+                                                 text="Get ready for level "+str(self.Level + 1)+"!",
+                                                 font="Helvetica 50 bold italic")
+        self.canvas.delete(msg)
+        self.canvas.update()
+        sleep(3)
+        self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
+                                                 text="Press Spacebar to Start Game",
+                                                 font="Helvetica 50 bold italic")
+        
 
     def CheckCollision(self, pos1, pos2):
         if pos1[0] < pos2[2] and pos1[2] > pos2[0] and pos1[1] < pos2[3] and pos1[3] > pos2[1]:
@@ -129,11 +148,7 @@ class OneP(object):
                 self.BallYDir *= -1
             #detect collision with bottom wall
             elif ballPos[3] + newPosY > WINDOW_HEIGHT:
-                self.GameOver = True
-                self.GamePlaying = False
-                self.end_msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 100),
-                                                 text="GAME OVER!",
-                                                 font="Helvetica 60 bold italic")
+                self.GameLost()
 
             #detect collision with the player
             elif ball_player_collision != 0:
@@ -167,6 +182,7 @@ class OneP(object):
                         brickPos = self.canvas.coords(brick[0])
                         ball_brick_collision = self.CheckCollision(brickPos, ballPos)
                         if ball_brick_collision:
+                            print("Brick Colour: "+self.canvas.itemcget(brick[0], 'fill'))
                             self.score.set(str(int(self.score.get()) + 10))
                             collision_state = self.GetCollisionState(ballPos, brickPos)
                             if collision_state == 1 or collision_state == 3:
@@ -186,9 +202,9 @@ class OneP(object):
                 self.canvas.move(self.Ball, newPosX, newPosY)
         if self.CheckLevelFinished():
             self.UpdateLevel()
-        else:
+        elif self.GamePlaying:
             self.UpdateDifficulty()        
-
+        if not self.GameOver:
             self.master.after(int(1000/60), self.BallMovement)
 
 
@@ -215,7 +231,7 @@ class OneP(object):
         currentTime = time() # in seconds
         #difficulty should be updated more frequently as the level increases
         deltaTime = currentTime - self.lastDiffUpdateTime
-        requiredDelta = 1#30 - (5 * self.Level)
+        requiredDelta = 30 - (5 * self.Level)
         if deltaTime >= requiredDelta:
             self.lastDiffUpdateTime = currentTime
             # move all the blocks down one block height
@@ -296,7 +312,8 @@ class OneP(object):
 
     def ProduceBricks(self, rows):
         cols = (WINDOW_WIDTH - (2 * X_PADDING)) // BRICK_WIDTH
-        colours = ['#dc3020', '#f09336', '#fffd55', '#2e74f6', '#eb42f7', '#74f94c']
+        #colours = ['#dc3020', '#f09336', '#fffd55', '#2e74f6', '#eb42f7', '#74f94c']
+        colours = ['#ca2c5a', '#f7da57', '#4eaed8', '#439541', '#4d4d4d']
         colourIndex = random.randint(0, len(colours) - 1)
         currentY = TOP_PADDING
         counter = 0
@@ -318,13 +335,13 @@ class OneP(object):
     def LeftKeyPressed(self, event):
         playerPos = self.canvas.coords(self.Player)
         newPosX = playerPos[0] - PLAYER_SPEED
-        if newPosX >= 0:
+        if newPosX >= 0 and self.GamePlaying and not self.GameOver:
             self.canvas.move(self.Player, -PLAYER_SPEED, 0)
 
     def RightKeyPressed(self, event):
         playerPos = self.canvas.coords(self.Player)
-        newPosX = playerPos[0] + PLAYER_SPEED
-        if newPosX <= WINDOW_WIDTH:
+        newPosX = playerPos[2] + PLAYER_SPEED
+        if newPosX <= WINDOW_WIDTH and self.GamePlaying and not self.GameOver:
             self.canvas.move(self.Player, PLAYER_SPEED, 0)
 
         
@@ -333,4 +350,4 @@ def run():
     root = Tk()
     app = OneP(root)
     root.mainloop()
-run()
+#run()
