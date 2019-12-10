@@ -88,7 +88,6 @@ class OneP(object):
 
     def ApplyCheats(self, event):
         self.KeysPressed.append(event.char)
-        print(self.KeysPressed)
 
         keysPressed = ''.join(self.KeysPressed).lower()#cheats are case-insensitive
         for cheat in self.Cheats:
@@ -105,6 +104,22 @@ class OneP(object):
                 elif cheat == 'big':
                     #make the player bigger for 5 seconds
                     self.master.after(1, lambda: self.ApplyBig(5, False))
+                elif cheat == 'slow' and 'slow' not in self.BallEffects:
+                    #can't slow down multiple times
+                    #slow down the ball for 5 seconds
+                    self.master.after(1, lambda: self.ApplySlow(5, self.BallSpeed, False))
+
+    def ApplySlow(self, timecounter, initialSpeed, applied):
+        '''In this cheat, the ball speed slows down by a factor of two, making it easier for the user'''
+        if timecounter != 0:
+            if not applied:
+                self.BallEffects.append('slow')
+                self.BallSpeed *= 0.5
+            timecounter -= 1
+            self.master.after(1000, lambda: self.ApplySlow(timecounter, initialSpeed, True))
+        else:
+            self.BallEffects.remove('slow')
+            self.BallSpeed = initialSpeed
 
     def ApplyBig(self, timecounter, applied):
         '''In this cheat, the player increases in width for 5 seconds'''
@@ -252,7 +267,7 @@ class OneP(object):
                 #the speed of the ball depends on how far it is from the center too
                 #it is faster closer to edge but slower towards the center
                 #max speed for any level should be (4 * level)
-                newSpeed = 5 * self.BallSpeed * distanceFromCentre / BRICK_WIDTH
+                newSpeed = 5 * self.BallSpeed * distanceFromCentre / BRICK_WIDTH if 'slow' not in self.BallEffects else self.BallSpeed
                 if newSpeed > 4 * self.Level:
                     newSpeed = 4 * self.Level
                 if newSpeed > self.BallSpeed:
