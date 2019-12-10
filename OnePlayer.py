@@ -80,7 +80,7 @@ class OneP(object):
         # look at the time for the purposes of making the game difficult as a function of time
         self.lastDiffUpdateTime = 0
 
-        self.Cheats = ['fire', 'ice', 'back', 'colours', 'guns']
+        self.Cheats = ['fire', 'ice', 'colours', 'guns', 'big', 'slow']
         self.master.bind('<Key>', self.ApplyCheats)
         self.KeysPressed = []
 
@@ -93,15 +93,40 @@ class OneP(object):
         keysPressed = ''.join(self.KeysPressed).lower()#cheats are case-insensitive
         for cheat in self.Cheats:
             if cheat in keysPressed and cheat not in self.BallEffects and cheat not in self.PlayerEffects:
-                #reset this stack so that the same cheat is not applied continuously without user input
+                #reset this key stack so that the same cheat is not applied continuously without user input
                 self.KeysPressed = []
                 if cheat == 'fire' and 'ice' not in self.BallEffects:
                     #iceball and fireball effects cannot be applied at the same time
                     #apply the fireball effect for 5 seconds
                     self.master.after(1, lambda: self.ApplyFireball(5))
-                if cheat == 'ice' and 'fire' not in self.BallEffects:
+                elif cheat == 'ice' and 'fire' not in self.BallEffects:
                     #apply the iceball effect for 5 seconds
                     self.master.after(1, lambda: self.ApplyIceball(5))
+                elif cheat == 'big':
+                    #make the player bigger for 5 seconds
+                    self.master.after(1, lambda: self.ApplyBig(5, False))
+
+    def ApplyBig(self, timecounter, applied):
+        '''In this cheat, the player increases in width for 5 seconds'''
+        playerPos = self.canvas.coords(self.Player)
+        if timecounter != 0:
+            if not applied:
+                self.canvas.delete(self.Player)
+                self.Player = self.canvas.create_oval(playerPos[0] - (0.04*WINDOW_WIDTH),
+                                                           WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
+                                                           (0.04*WINDOW_WIDTH) + playerPos[2],
+                                                           WINDOW_HEIGHT - BOTTOM_PADDING,
+                                                           width=0, fill='blue')
+            timecounter -= 1
+            self.master.after(1000, lambda: self.ApplyBig(timecounter, True))
+        else:
+            self.canvas.delete(self.Player)
+            self.Player = self.canvas.create_oval((0.02*WINDOW_WIDTH) + playerPos[0],
+                                                  WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
+                                                  playerPos[2] - (0.02*WINDOW_WIDTH),
+                                                  WINDOW_HEIGHT - BOTTOM_PADDING,
+                                                  width=0, fill='blue')
+            
 
     def ApplyIceball(self, timecounter):
         '''In this cheat, the ball does not destroy any bricks upon contact, it simply rebounds'''
