@@ -39,7 +39,7 @@ class Leaderboard(object):
         self.title_label.place(relx=0.5, rely=0.25, anchor=CENTER)
 
         raw_data = pickle.load(open('leaderboard-data.p', 'rb'))
-        sorted_data = sorted(raw_data, key=lambda x: x[1], reverse=True)[:10]
+        sorted_data = sorted(raw_data, key=lambda x: x[1], reverse=True)[:5]
 
         row_title_text = "Num \t Name \t Score"
         currentY = 0.25 * WINDOW_HEIGHT + 50

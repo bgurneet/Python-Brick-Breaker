@@ -185,6 +185,17 @@ class OneP():
         self.master.bind('<Key>', self.ApplyCheats)
         self.KeysPressed = []
 
+        self.level_label = Label(self.master,
+                                 cursor='none',
+                                 font='Helvetica 20 italic',
+                                 background='#006666',
+                                 text='Powerups:')
+        self.level_label.place(relx=0.65, rely=0, anchor=N)
+
+        fireball = PhotoImage(file='fireball.png')
+        self.master.fireball = fireball
+        self.canvas.create_image(0.72*WINDOW_WIDTH, 0, image=fireball, anchor=N)
+
         self.Bullets = []
 
         self.UpdateLevel()
@@ -374,9 +385,10 @@ class OneP():
         else:
             if self.Level != 0:
                 #congratulate them for making it to the next level
-                self.LevelTransition()
+                #self.LevelTransition()
                 self.BallSpeed *= 1.5 * self.Level
                 self.canvas.delete(self.Ball)
+                self.BallEffects = []
             self.Level += 1
             self.level.set("Level: "+str(self.Level))
             self.GamePlaying = False
@@ -397,16 +409,17 @@ class OneP():
                                                  font="Helvetica 50 bold italic")
         sleep(3)
         self.canvas.delete(msg)
-        self.canvas.update()
+        self.master.update()
         msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
                                                  text="Get ready for level "+str(self.Level + 1)+"!",
                                                  font="Helvetica 50 bold italic")
         self.canvas.delete(msg)
-        self.canvas.update()
+        self.master.update()
         sleep(3)
         self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
                                                  text="Press Spacebar to Start Game",
                                                  font="Helvetica 50 bold italic")
+        self.master.update()
         
 
     def CheckCollision(self, pos1, pos2):
@@ -565,7 +578,7 @@ class OneP():
         if not self.GameOver:
             if not self.GamePlaying:
                 self.canvas.delete(self.start_msg)
-                self.canvas.update()
+                self.master.update()
                 counterLabel = Label(self.master, cursor='none', font='Helvetica 50 bold italic', background='#006666', text='3...')
                 counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
                 self.master.update()
