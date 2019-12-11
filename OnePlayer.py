@@ -327,11 +327,11 @@ class OneP():
             self.master.after(1000, lambda: self.ApplyBig(timecounter, True))
         else:
             self.canvas.delete(self.Player)
-            self.Player = self.canvas.create_rectangle((0.02*WINDOW_WIDTH) + playerPos[0],
-                                                  WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
-                                                  playerPos[2] - (0.02*WINDOW_WIDTH),
-                                                  WINDOW_HEIGHT - BOTTOM_PADDING,
-                                                  width=0, fill=self.PlayerColour)
+            self.Player = self.canvas.create_rectangle(0.43*WINDOW_WIDTH,
+                                                   WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
+                                                   0.57*WINDOW_WIDTH,
+                                                   WINDOW_HEIGHT - BOTTOM_PADDING,
+                                                   width=0, fill=self.PlayerColour)
             
 
     def ApplyIceball(self, timecounter):
@@ -566,7 +566,7 @@ class OneP():
             if not self.GamePlaying:
                 self.canvas.delete(self.start_msg)
                 self.canvas.update()
-    	        counterLabel = Label(self.master, cursor='none', font='Helvetica 50 bold italic', background='#006666', text='3...')
+                counterLabel = Label(self.master, cursor='none', font='Helvetica 50 bold italic', background='#006666', text='3...')
                 counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
                 self.master.update()
                 sleep(1)
@@ -576,7 +576,7 @@ class OneP():
                                      font='Helvetica 50 bold italic',
                                      background='#006666',
                                      text='2...')
-                                     counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
+                counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
                 self.master.update()
                 sleep(1)
                 counterLabel.destroy()
