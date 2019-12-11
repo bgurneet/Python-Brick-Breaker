@@ -1,6 +1,7 @@
 from tkinter import *
 import OnePlayer
 import Leaderboard
+import Settings
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 700
@@ -120,6 +121,8 @@ class Application(object):
 
     def SettingsBtnPressed(self):
         print("Settings Pressed")
+        self.master.destroy()
+        Settings.run()
         
         
 def run():
