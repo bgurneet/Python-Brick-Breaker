@@ -1,0 +1,3 @@
+import BrickBreaker
+
+BrickBreaker.run()

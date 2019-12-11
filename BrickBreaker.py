@@ -126,4 +126,3 @@ def run():
     root = Tk()
     app = Application(root)
     root.mainloop()
-run()
