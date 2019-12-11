@@ -50,7 +50,6 @@ class LeaderboardPopup():
 
 class SaveGamePopup():
     def __init__(self, master, score, level):
-        self.parent = master
         self.master = Toplevel(master)
         self.score = score
         self.level = level
@@ -75,10 +74,6 @@ class SaveGamePopup():
         with shelve.open(gamename) as db:
             db['score'] = self.score
             db['level'] = self.level
-        self.master.destroy()
-        self.parent.destroy()
-        BrickBreaker.run()
-        
 
 
 
@@ -165,10 +160,6 @@ class OneP():
         #start the game when the user first presses space
         self.master.bind('<space>', self.StartGame)
 
-        #boss-key
-        self.master.bind('<b>', self.BossKeyPressed)
-        self.BossKey = False
-
         self.score_label = Label(self.master,
                                  cursor='none',
                                  font='Helvetica 20 italic',
@@ -182,14 +173,6 @@ class OneP():
                                  background='#006666',
                                  textvariable=self.level)
         self.level_label.place(relx=0.5, rely=0, anchor=N)
-
-        self.powerups_label = Label(self.master,
-                                    cursor='none',
-                                    font='Helvetica 20 italic',
-                                    background='#006666',
-                                    text='Power Ups:')
-        self.powerups_label.place(relx=0.65, rely=0, anchor=N)
-        
         
         self.BallEffects = []
         self.PlayerEffects = []
@@ -210,8 +193,12 @@ class OneP():
         self.level_label.place(relx=0.65, rely=0, anchor=N)
 
         fireball = PhotoImage(file='fireball.png')
-        self.master.fireball = fireball
-        self.canvas.create_image(0.72*WINDOW_WIDTH, 0, image=fireball, anchor=N)
+        self.master.Fireball = fireball#avoid the image from being garbage collected
+        self.FireballImage = self.canvas.create_image(0.72*WINDOW_WIDTH, 0, image=fireball, anchor=N, state=HIDDEN)
+
+        iceball = PhotoImage(file='iceball.png')
+        self.master.Iceball = iceball#avoid the image from being garbage collected
+        self.IceballImage = self.canvas.create_image(0.75*WINDOW_WIDTH, 0, image=iceball, anchor=N, state=HIDDEN)
 
         self.Bullets = []
 
@@ -369,12 +356,14 @@ class OneP():
             if ballColour != '#4eaed8':
                 self.BallEffects.append('ice')
                 self.canvas.itemconfig(self.Ball, fill='#4eaed8')
+                self.canvas.itemconfig(self.IceballImage, state=NORMAL)
             timecounter -= 1
             self.master.after(1000, lambda: self.ApplyIceball(timecounter))
         else:
             #reset the colour of the ball and remove the cheat from active ball effects
             self.BallEffects.remove('ice')
             self.canvas.itemconfig(self.Ball, fill='#99ff99')
+            self.canvas.itemconfig(self.IceballImage, state=HIDDEN)
 
     def ApplyFireball(self, timecounter):
         '''In this cheat, the ball does not rebound when it collides with a brick, it destorys
@@ -384,18 +373,21 @@ class OneP():
             if ballColour != '#ff3333':
                 self.BallEffects.append('fire')
                 self.canvas.itemconfig(self.Ball, fill='#ff3333')
+                self.canvas.itemconfig(self.FireballImage, state=NORMAL)
             timecounter -= 1
             self.master.after(1000, lambda: self.ApplyFireball(timecounter))
         else:
             #reset the colour of the ball and remove cheat from active ball effects
             self.BallEffects.remove('fire')
             self.canvas.itemconfig(self.Ball, fill='#99ff99')
+            self.canvas.itemconfig(self.FireballImage, state=HIDDEN)
         
                 
         
             
 
     def UpdateLevel(self):
+        print('here')
         if self.Level == 5:
             self.GameWon()
         else:
@@ -683,14 +675,6 @@ class OneP():
         score = int(self.score.get().split(": ")[1]) - (self.CountDeadBricks() * 10)
         level = int(self.score.get().split(": ")[1])
         popup = SaveGamePopup(self.master, score, level)
-
-    def BossKeyPressed(self):
-        if self.BossKey:
-            self.BossKey = False
-        else:
-            self.BossKey = True
-            
-        
         
 
         
