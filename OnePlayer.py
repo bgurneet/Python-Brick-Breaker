@@ -45,7 +45,8 @@ class LeaderboardPopup():
         scores = pickle.load(open('leaderboard-data.p', 'rb'))
         scores.append([name, self.score])
         pickle.dump(scores, open('leaderboard-data.p', 'wb'))
-        self.master.destroy()
+        self.posted = True
+        #self.master.destroy()
 
 class SaveGamePopup():
     def __init__(self, master, score, level):
@@ -118,6 +119,15 @@ class OneP():
                               text="Main Menu")
         self.BackBtn.place(relx=0.0, rely=0, anchor=NW)
 
+        self.RestartBtn = Button(self.master,
+                              cursor='trek',
+                              background='#00e6e6',
+                              relief=GROOVE,
+                              font="Helvetica 12",
+                              command=self.RestartBtnPressed,
+                              text="Restart")
+        self.RestartBtn.place(relx=0.1, rely=0, anchor=NW)
+
         self.SaveBtn = Button(self.master,
                               cursor='trek',
                               background='#00e6e6',
@@ -125,7 +135,7 @@ class OneP():
                               font="Helvetica 12",
                               command=self.SaveGameBtnPressed,
                               text="Save Game")
-        self.SaveBtn.place(relx=0.1, rely=0, anchor=NW)
+        self.SaveBtn.place(relx=0.2, rely=0, anchor=NW)
 
         
 
@@ -180,6 +190,10 @@ class OneP():
     def BackBtnPressed(self):
         self.master.destroy()
         BrickBreaker.run()
+
+    def RestartBtnPressed(self):
+        self.master.destroy()
+        run()
         
     def ApplyCheats(self, event):
         if self.GamePlaying:
