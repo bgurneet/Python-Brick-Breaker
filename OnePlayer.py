@@ -50,6 +50,7 @@ class LeaderboardPopup():
 
 class SaveGamePopup():
     def __init__(self, master, score, level):
+        self.parent = master
         self.master = Toplevel(master)
         self.score = score
         self.level = level
@@ -74,6 +75,10 @@ class SaveGamePopup():
         with shelve.open(gamename) as db:
             db['score'] = self.score
             db['level'] = self.level
+        self.master.destroy()
+        self.parent.destroy()
+        BrickBreaker.run()
+        
 
 
 
@@ -160,6 +165,10 @@ class OneP():
         #start the game when the user first presses space
         self.master.bind('<space>', self.StartGame)
 
+        #boss-key
+        self.master.bind('<b>', self.BossKeyPressed)
+        self.BossKey = False
+
         self.score_label = Label(self.master,
                                  cursor='none',
                                  font='Helvetica 20 italic',
@@ -173,6 +182,14 @@ class OneP():
                                  background='#006666',
                                  textvariable=self.level)
         self.level_label.place(relx=0.5, rely=0, anchor=N)
+
+        self.powerups_label = Label(self.master,
+                                    cursor='none',
+                                    font='Helvetica 20 italic',
+                                    background='#006666',
+                                    text='Power Ups:')
+        self.powerups_label.place(relx=0.65, rely=0, anchor=N)
+        
         
         self.BallEffects = []
         self.PlayerEffects = []
@@ -379,7 +396,6 @@ class OneP():
             
 
     def UpdateLevel(self):
-        print('here')
         if self.Level == 5:
             self.GameWon()
         else:
@@ -667,6 +683,14 @@ class OneP():
         score = int(self.score.get().split(": ")[1]) - (self.CountDeadBricks() * 10)
         level = int(self.score.get().split(": ")[1])
         popup = SaveGamePopup(self.master, score, level)
+
+    def BossKeyPressed(self):
+        if self.BossKey:
+            self.BossKey = False
+        else:
+            self.BossKey = True
+            
+        
         
 
         
