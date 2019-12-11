@@ -65,47 +65,43 @@ class Application(object):
 
         self.OnePlayerBtn = Button(self.master,
                                    cursor='trek',
-                                   highlightbackground='#00e6e6',
+                                   background='#00e6e6',
+                                   activebackground='#009999',
                                    relief=GROOVE,
                                    font="Helvetica 30",
                                    command=self.OnePlayerBtnPressed,
                                    text="1 Player")
         self.OnePlayerBtn.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.OnePlayerBtn.bind("<Enter>", self.BtnOneEnter)
-        self.OnePlayerBtn.bind("<Leave>", self.BtnOneLeave)
 
         self.LoadBtn = Button(self.master,
                                    cursor='trek',
-                                   highlightbackground='#00e6e6',
+                                   background='#00e6e6',
+                                   activebackground='#009999',
                                    relief=GROOVE,
                                    font="Helvetica 30",
                                    command=self.LoadBtnPressed,
                                    text="Load Game")
         self.LoadBtn.place(relx=0.5, rely=0.6, anchor=CENTER)
-        self.LoadBtn.bind("<Enter>", self.BtnLoadEnter)
-        self.LoadBtn.bind("<Leave>", self.BtnLoadLeave)
 
         self.LeaderboardBtn = Button(self.master,
                                    cursor='trek',
-                                   highlightbackground='#00e6e6',
+                                   background='#00e6e6',
+                                   activebackground='#009999',
                                    relief=GROOVE,
                                    font="Helvetica 30",
                                    command=self.LeaderboardBtnPressed,
                                    text="Leaderboard")
         self.LeaderboardBtn.place(relx=0.5, rely=0.7, anchor=CENTER)
-        self.LeaderboardBtn.bind("<Enter>", self.BtnLeaderboardEnter)
-        self.LeaderboardBtn.bind("<Leave>", self.BtnLeaderboardLeave)
 
         self.SettingsBtn = Button(self.master,
                                   cursor='trek',
-                                  highlightbackground="#00e6e6",
+                                  background='#00e6e6',
+                                  activebackground='#009999',
                                   relief=GROOVE,
                                   font="Helvetica 30",
                                   command=self.SettingsBtnPressed,
                                   text="Settings")
         self.SettingsBtn.place(relx=0.5, rely=0.8, anchor=CENTER)
-        self.SettingsBtn.bind("<Enter>", self.BtnSettingsEnter)
-        self.SettingsBtn.bind("<Leave>", self.BtnSettingsLeave)
         
 
     def OnePlayerBtnPressed(self):
@@ -113,52 +109,21 @@ class Application(object):
         self.master.destroy()
         OnePlayer.run()
 
-    def BtnOneEnter(self, event):
-        self.OnePlayerBtn['highlightbackground'] = '#009999'
-        self.OnePlayerBtn['font'] = "Helvetica 30 italic"
-        
-    def BtnOneLeave(self, event):
-        self.OnePlayerBtn['highlightbackground'] = '#00e6e6'
-        self.OnePlayerBtn['font'] = "Helvetica 30"
-
     def LoadBtnPressed(self):
         print("Load Game Pressed")
         popup = LoadGamePopup(self.master)
-
-    def BtnLoadEnter(self, event):
-        self.LoadBtn["highlightbackground"] = "#009999"
-        self.LoadBtn["font"] = "Helvetica 30 italic"
-
-    def BtnLoadLeave(self, event):
-        self.LoadBtn["highlightbackground"] = "#009999"
-        self.LoadBtn["font"] = "Helvetica 30"
 
     def LeaderboardBtnPressed(self):
         print("Leaderboard Pressed")
         self.master.destroy()
         Leaderboard.run()
 
-    def BtnLeaderboardEnter(self, event):
-        self.LeaderboardBtn["highlightbackground"] = "#009999"
-        self.LeaderboardBtn["font"] = "Helvetica 30 italic"
-
-    def BtnLeaderboardLeave(self, event):
-        self.LeaderboardBtn["highlightbackground"] = "#009999"
-        self.LeaderboardBtn["font"] = "Helvetica 30"
-
     def SettingsBtnPressed(self):
         print("Settings Pressed")
-
-    def BtnSettingsEnter(self, event):
-        self.SettingsBtn["highlightbackground"] = "#009999"
-        self.SettingsBtn["font"] = "Helvetica 30 italic"
-
-    def BtnSettingsLeave(self, event):
-        self.SettingsBtn["highlightbackground"] = "#009999"
-        self.SettingsBtn["font"] = "Helvetica 30"
         
         
 def run():
     root = Tk()
     app = Application(root)
     root.mainloop()
+run()
