@@ -148,8 +148,11 @@ class OneP():
                                                    0.57*WINDOW_WIDTH,
                                                    WINDOW_HEIGHT - BOTTOM_PADDING,
                                                    width=0, fill=self.PlayerColour)
-        self.master.bind("<Left>", self.LeftKeyPressed)
-        self.master.bind("<Right>", self.RightKeyPressed)
+
+        self.keybindings = pickle.load(open('keybindings.p', 'rb'))
+        
+        self.master.bind(self.keybindings['left'], self.LeftKeyPressed)
+        self.master.bind(self.keybindings['right'], self.RightKeyPressed)
         
         self.Bricks = []
         self.Level = 0
@@ -158,7 +161,7 @@ class OneP():
         self.GamePlaying = False
         self.GameOver = False
         #start the game when the user first presses space
-        self.master.bind('<space>', self.StartGame)
+        self.master.bind(self.keybindings['pause'], self.StartGame)
 
         self.score_label = Label(self.master,
                                  cursor='none',
@@ -407,7 +410,7 @@ class OneP():
             self.BallYDir = 1
             self.canvas.update()
             self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
-                                                 text="Press Spacebar to Start Game",
+                                                 text="Press "+self.keybindings['pause']+" to Start Game",
                                                  font="Helvetica 50 bold italic")
             
     def LevelTransition(self):
@@ -425,7 +428,7 @@ class OneP():
         self.master.update()
         sleep(3)
         self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
-                                                 text="Press Spacebar to Start Game",
+                                                 text="Press "+self.keybindings['pause']+" to Start Game",
                                                  font="Helvetica 50 bold italic")
         self.master.update()
         
@@ -614,7 +617,7 @@ class OneP():
             else:
                 self.GamePlaying = False
                 self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
-                                                     text="Press Spacebar to Start Game",
+                                                     text="Press "+self.keybindings['pause']+" to Start Game",
                                                      font="Helvetica 50 bold italic")
                 self.lastDiffUpdateTime = time()
             
