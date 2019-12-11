@@ -5,7 +5,6 @@ import BrickBreaker
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 700
 
-#test = [['', 100], ['Gurneet', 90], ['Haikal', 110], ['Zeynep', 60], ['Greta', 120], ['Pedro', 40]]
 
 class Leaderboard(object):
     def __init__(self, master):
@@ -22,7 +21,8 @@ class Leaderboard(object):
 
         self.BackBtn = Button(self.master,
                                    cursor='trek',
-                                   highlightbackground='#00e6e6',
+                                   background='#00e6e6',
+                                   activebackground='#009999',
                                    relief=GROOVE,
                                    font="Helvetica 30",
                                    command=self.BackBtnPressed,

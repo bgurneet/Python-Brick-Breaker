@@ -46,7 +46,7 @@ class LeaderboardPopup():
         scores.append([name, self.score])
         pickle.dump(scores, open('leaderboard-data.p', 'wb'))
         self.posted = True
-        #self.master.destroy()
+        self.master.destroy()
 
 class SaveGamePopup():
     def __init__(self, master, score, level):
@@ -113,6 +113,7 @@ class OneP():
         self.BackBtn = Button(self.master,
                               cursor='trek',
                               background='#00e6e6',
+                              activebackground='#009999',
                               relief=GROOVE,
                               font="Helvetica 12",
                               command=self.BackBtnPressed,
@@ -122,6 +123,7 @@ class OneP():
         self.RestartBtn = Button(self.master,
                               cursor='trek',
                               background='#00e6e6',
+                              activebackground='#009999',
                               relief=GROOVE,
                               font="Helvetica 12",
                               command=self.RestartBtnPressed,
@@ -131,6 +133,7 @@ class OneP():
         self.SaveBtn = Button(self.master,
                               cursor='trek',
                               background='#00e6e6',
+                              activebackground='#009999',
                               relief=GROOVE,
                               font="Helvetica 12",
                               command=self.SaveGameBtnPressed,
@@ -492,6 +495,7 @@ class OneP():
                 newPosY = self.BallYDir * self.BallSpeed
                 self.canvas.move(self.Ball, newPosX, newPosY)
         if self.CheckLevelFinished():
+            print('LEVEL FINISHED')
             self.UpdateLevel()
         elif self.GamePlaying:
             self.UpdateDifficulty()        
@@ -558,49 +562,45 @@ class OneP():
         self.EnterToLeaderboard()
 
     def StartGame(self, event):
-        if not self.GamePlaying:
-            self.canvas.delete(self.start_msg)
-            self.canvas.update()
-            counterLabel = Label(self.master,
-                                 cursor='none',
-                                 font='Helvetica 50 bold italic',
-                                 background='#006666',
-                                 text='3...')
-            counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
-            self.master.update()
-            sleep(1)
-            counterLabel.destroy()
-            counterLabel = Label(self.master,
-                                 cursor='none',
-                                 font='Helvetica 50 bold italic',
-                                 background='#006666',
-                                 text='2...')
-            counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
-            self.master.update()
-            sleep(1)
-            counterLabel.destroy()
-            counterLabel = Label(self.master,
-                                 cursor='none',
-                                 font='Helvetica 50 bold italic',
-                                 background='#006666',
-                                 text='1...')
-            counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
-            self.master.update()
-            sleep(1)
-            counterLabel.destroy()
-            self.GamePlaying = True
-        else:
-            self.GamePlaying = False
-            self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
-                                                 text="Press Spacebar to Start Game",
-                                                 font="Helvetica 50 bold italic")
-            self.lastDiffUpdateTime = time()
+        if not self.GameOver:
+            if not self.GamePlaying:
+                self.canvas.delete(self.start_msg)
+                self.canvas.update()
+    	        counterLabel = Label(self.master, cursor='none', font='Helvetica 50 bold italic', background='#006666', text='3...')
+                counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
+                self.master.update()
+                sleep(1)
+                counterLabel.destroy()
+                counterLabel = Label(self.master,
+                                     cursor='none',
+                                     font='Helvetica 50 bold italic',
+                                     background='#006666',
+                                     text='2...')
+                                     counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
+                self.master.update()
+                sleep(1)
+                counterLabel.destroy()
+                counterLabel = Label(self.master,
+                                     cursor='none',
+                                     font='Helvetica 50 bold italic',
+                                     background='#006666',
+                                     text='1...')
+                counterLabel.place(relx=0.5, rely=0.75, anchor=CENTER)
+                self.master.update()
+                sleep(1)
+                counterLabel.destroy()
+                self.GamePlaying = True
+            else:
+                self.GamePlaying = False
+                self.start_msg = self.canvas.create_text((WINDOW_WIDTH/2, (WINDOW_HEIGHT/2) + 100),
+                                                     text="Press Spacebar to Start Game",
+                                                     font="Helvetica 50 bold italic")
+                self.lastDiffUpdateTime = time()
             
 
     def DrawCircle(self, x, y, radius, colour):
         return self.canvas.create_oval(x - radius, y - radius,
-                                       x + radius, y + radius,
-                                       width=0, fill=colour)
+                                       x + radius, y + radius, width=0, fill=colour)
 
     def ProduceBrick(self, colour, x1, y1, x2, y2):
         brick = self.canvas.create_rectangle(x1, y1, x2, y2, fill=colour)
