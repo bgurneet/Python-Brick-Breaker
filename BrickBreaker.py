@@ -1,5 +1,6 @@
 from tkinter import *
 import OnePlayer
+import Leaderboard
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 700
@@ -24,8 +25,6 @@ class Application(object):
                                  text="BRICK\nBREAKER")
         self.title_label.place(relx=0.5, rely=0.25, anchor=CENTER)
 
-        #using highlightbackground instaed of just background because Macs dont support the changing of button coloura
-        #additionally I wanted to ensure cross-platform functionality
         self.OnePlayerBtn = Button(self.master,
                                    cursor='trek',
                                    highlightbackground='#00e6e6',
@@ -37,16 +36,27 @@ class Application(object):
         self.OnePlayerBtn.bind("<Enter>", self.BtnOneEnter)
         self.OnePlayerBtn.bind("<Leave>", self.BtnOneLeave)
 
-        self.TwoPlayerBtn = Button(self.master,
+        self.LoadBtn = Button(self.master,
                                    cursor='trek',
                                    highlightbackground='#00e6e6',
                                    relief=GROOVE,
                                    font="Helvetica 30",
-                                   command=self.TwoPlayerBtnPressed,
-                                   text="2 Player")
-        self.TwoPlayerBtn.place(relx=0.5, rely=0.6, anchor=CENTER)
-        self.TwoPlayerBtn.bind("<Enter>", self.BtnTwoEnter)
-        self.TwoPlayerBtn.bind("<Leave>", self.BtnTwoLeave)
+                                   command=self.LoadBtnPressed,
+                                   text="Load Game")
+        self.LoadBtn.place(relx=0.5, rely=0.6, anchor=CENTER)
+        self.LoadBtn.bind("<Enter>", self.BtnLoadEnter)
+        self.LoadBtn.bind("<Leave>", self.BtnLoadLeave)
+
+        self.LeaderboardBtn = Button(self.master,
+                                   cursor='trek',
+                                   highlightbackground='#00e6e6',
+                                   relief=GROOVE,
+                                   font="Helvetica 30",
+                                   command=self.LeaderboardBtnPressed,
+                                   text="Leaderboard")
+        self.LeaderboardBtn.place(relx=0.5, rely=0.7, anchor=CENTER)
+        self.LeaderboardBtn.bind("<Enter>", self.BtnLeaderboardEnter)
+        self.LeaderboardBtn.bind("<Leave>", self.BtnLeaderboardLeave)
 
         self.SettingsBtn = Button(self.master,
                                   cursor='trek',
@@ -55,7 +65,7 @@ class Application(object):
                                   font="Helvetica 30",
                                   command=self.SettingsBtnPressed,
                                   text="Settings")
-        self.SettingsBtn.place(relx=0.5, rely=0.7, anchor=CENTER)
+        self.SettingsBtn.place(relx=0.5, rely=0.8, anchor=CENTER)
         self.SettingsBtn.bind("<Enter>", self.BtnSettingsEnter)
         self.SettingsBtn.bind("<Leave>", self.BtnSettingsLeave)
         
@@ -85,6 +95,29 @@ class Application(object):
         self.TwoPlayerBtn['highlightbackground'] = '#00e6e6'
         self.TwoPlayerBtn['font'] = "Helvetica 30"
 
+    def LoadBtnPressed(self):
+        print("Load Game Pressed")
+
+    def BtnLoadEnter(self, event):
+        self.LoadBtn["highlightbackground"] = "#009999"
+        self.LoadBtn["font"] = "Helvetica 30 italic"
+
+    def BtnLoadLeave(self, event):
+        self.LoadBtn["highlightbackground"] = "#009999"
+        self.LoadBtn["font"] = "Helvetica 30"
+
+    def LeaderboardBtnPressed(self):
+        print("Leaderboard Pressed")
+        Leaderboard.run
+
+    def BtnLeaderboardEnter(self, event):
+        self.LeaderboardBtn["highlightbackground"] = "#009999"
+        self.LeaderboardBtn["font"] = "Helvetica 30 italic"
+
+    def BtnLeaderboardLeave(self, event):
+        self.LeaderboardBtn["highlightbackground"] = "#009999"
+        self.LeaderboardBtn["font"] = "Helvetica 30"
+
     def SettingsBtnPressed(self):
         print("Settings Pressed")
 
@@ -97,7 +130,7 @@ class Application(object):
         self.SettingsBtn["font"] = "Helvetica 30"
         
         
-
-root = Tk()
-app = Application(root)
-root.mainloop()
+def run():
+    root = Tk()
+    app = Application(root)
+    root.mainloop()

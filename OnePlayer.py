@@ -1,6 +1,9 @@
 from tkinter import *
 import random
 from time import time, sleep
+import shelve
+import pickle
+import BrickBreaker
 
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
@@ -17,9 +20,64 @@ BRICK_WIDTH = 100
 BRICK_HEIGHT = 20
 
 
+class LeaderboardPopup():
+    def __init__(self, master, score):
+        self.master = Toplevel(master)
+        self.score = score
+        self.master.title("Leaderboard Entry")
+        self.master.resizable(False, False)
+        self.canvas = Canvas(self.master,
+                             cursor='pirate',
+                             width=200,
+                             height=200,
+                             highlightthickness=0)
+        self.canvas.pack(expand=YES, fill=BOTH)
+        self.canvas.configure(background='#006666')
+        self.name = Label(self.master, text="Name:")
+        self.name.place(relx=0.5, rely=0.0, anchor=N)
+        self.nameVal = Entry(self.master)
+        self.nameVal.place(relx=0.5, rely=0.2, anchor=CENTER)
+        self.enter = Button(self.master, text='Publish', command=self.AddLeaderboard)
+        self.enter.place(relx=0.5, rely=0.4, anchor=CENTER)
+        
+    def AddLeaderboard(self):
+        name = self.nameVal.get()
+        scores = pickle.load(open('leaderboard-data.p', 'rb'))
+        scores.append([name, self.score])
+        pickle.dump(scores, open('leaderboard-data.p', 'wb'))
+        self.master.destroy()
 
-class OneP(object):
-    def __init__(self, master):
+class SaveGamePopup():
+    def __init__(self, master, score, level):
+        self.master = Toplevel(master)
+        self.score = score
+        self.level = level
+        self.master.title("Save Game")
+        self.master.resizable(False, False)
+        self.canvas = Canvas(self.master,
+                             cursor='pirate',
+                             width=200,
+                             height=200,
+                             highlightthickness=0)
+        self.canvas.pack(expand=YES, fill=BOTH)
+        self.canvas.configure(background='#006666')
+        self.name = Label(self.master, text="Filename:")
+        self.name.place(relx=0.5, rely=0.0, anchor=N)
+        self.nameVal = Entry(self.master)
+        self.nameVal.place(relx=0.5, rely=0.2, anchor=CENTER)
+        self.enter = Button(self.master, text='Save', command=self.SaveGame)
+        self.enter.place(relx=0.5, rely=0.4, anchor=CENTER)
+
+    def SaveGame(self):
+        gamename = self.nameVal.get()
+        with shelve.open(gamename) as db:
+            db['score'] = self.score
+            db['level'] = self.level
+
+
+
+class OneP():
+    def __init__(self, master, gamename=None):
         self.master = master
         self.master.title("Brick Breaker - One Player")
         self.master.resizable(False, False)
@@ -31,17 +89,52 @@ class OneP(object):
         self.canvas.pack(expand=YES, fill=BOTH)
         self.canvas.configure(background='#006666')
 
+        self.level = StringVar()
+        self.Level = 0
+        self.score = StringVar()
+        if gamename == None:
+            #not loading a previously saved game
+            self.score.set("Score: "+str(0))
+            self.level.set("Level: "+str(self.Level))
+        else:
+            with shelve.open(gamename) as db:
+                self.score.set("Score: "+str(db['score']))
+                self.Level = db['level']
+                self.level.set("Level: "+str(self.Level))
+            
+
         #make player
         window_centerX = WINDOW_WIDTH/2
         window_centerY = WINDOW_HEIGHT/2
         player_centerX = PLAYER_WIDTH/2
         player_centerY = PLAYER_HEIGHT/2
+
+        self.BackBtn = Button(self.master,
+                              cursor='trek',
+                              background='#00e6e6',
+                              relief=GROOVE,
+                              font="Helvetica 12",
+                              command=self.BackBtnPressed,
+                              text="Main Menu")
+        self.BackBtn.place(relx=0.0, rely=0, anchor=NW)
+
+        self.SaveBtn = Button(self.master,
+                              cursor='trek',
+                              background='#00e6e6',
+                              relief=GROOVE,
+                              font="Helvetica 12",
+                              command=self.SaveGameBtnPressed,
+                              text="Save Game")
+        self.SaveBtn.place(relx=0.1, rely=0, anchor=NW)
+
         
-        self.Player = self.canvas.create_oval(0.43*WINDOW_WIDTH,
+
+        self.PlayerColour = 'blue'
+        self.Player = self.canvas.create_rectangle(0.43*WINDOW_WIDTH,
                                                    WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
                                                    0.57*WINDOW_WIDTH,
                                                    WINDOW_HEIGHT - BOTTOM_PADDING,
-                                                   width=0, fill='blue')
+                                                   width=0, fill=self.PlayerColour)
         self.master.bind("<Left>", self.LeftKeyPressed)
         self.master.bind("<Right>", self.RightKeyPressed)
         
@@ -53,10 +146,7 @@ class OneP(object):
         self.GameOver = False
         #start the game when the user first presses space
         self.master.bind('<space>', self.StartGame)
-        self.master.after(1, self.BallMovement)
 
-        self.score = StringVar()
-        self.score.set("Score: "+str(0))
         self.score_label = Label(self.master,
                                  cursor='none',
                                  font='Helvetica 20 italic',
@@ -64,8 +154,6 @@ class OneP(object):
                                  textvariable=self.score)
         self.score_label.place(relx=0.95, rely=0, anchor=NE)
 
-        self.level = StringVar()
-        self.level.set("Level: "+str(self.Level))
         self.level_label = Label(self.master,
                                  cursor='none',
                                  font='Helvetica 20 italic',
@@ -84,30 +172,115 @@ class OneP(object):
         self.master.bind('<Key>', self.ApplyCheats)
         self.KeysPressed = []
 
+        self.Bullets = []
+
         self.UpdateLevel()
+        self.master.after(1, self.BallMovement)
 
+    def BackBtnPressed(self):
+        self.master.destroy()
+        BrickBreaker.run()
+        
     def ApplyCheats(self, event):
-        self.KeysPressed.append(event.char)
+        if self.GamePlaying:
+            self.KeysPressed.append(event.char)
+            keysPressed = ''.join(self.KeysPressed).lower()#cheats are case-insensitive
+            for cheat in self.Cheats:
+                if cheat in keysPressed and cheat not in self.BallEffects and cheat not in self.PlayerEffects:
+                    #reset this key stack so that the same cheat is not applied continuously without user input
+                    self.KeysPressed = []
+                    if cheat == 'fire' and 'ice' not in self.BallEffects:
+                        #iceball and fireball effects cannot be applied at the same time
+                        #apply the fireball effect for 5 seconds
+                        self.master.after(1, lambda: self.ApplyFireball(5))
+                    elif cheat == 'ice' and 'fire' not in self.BallEffects:
+                        #apply the iceball effect for 5 seconds
+                        self.master.after(1, lambda: self.ApplyIceball(5))
+                    elif cheat == 'big':
+                        #make the player bigger for 5 seconds
+                        self.master.after(1, lambda: self.ApplyBig(5, False))
+                    elif cheat == 'slow' and 'slow' not in self.BallEffects:
+                        #can't slow down multiple times
+                        #slow down the ball for 5 seconds
+                        self.master.after(1, lambda: self.ApplySlow(5, self.BallSpeed, False))
+                    elif cheat == 'colours':
+                        #change the colour of the player randomly
+                        self.ApplyColours()
+                    elif cheat == 'guns':
+                        #give the player guns
+                        self.master.after(1, lambda: self.ApplyGuns(3, 3))
+                    
 
-        keysPressed = ''.join(self.KeysPressed).lower()#cheats are case-insensitive
-        for cheat in self.Cheats:
-            if cheat in keysPressed and cheat not in self.BallEffects and cheat not in self.PlayerEffects:
-                #reset this key stack so that the same cheat is not applied continuously without user input
-                self.KeysPressed = []
-                if cheat == 'fire' and 'ice' not in self.BallEffects:
-                    #iceball and fireball effects cannot be applied at the same time
-                    #apply the fireball effect for 5 seconds
-                    self.master.after(1, lambda: self.ApplyFireball(5))
-                elif cheat == 'ice' and 'fire' not in self.BallEffects:
-                    #apply the iceball effect for 5 seconds
-                    self.master.after(1, lambda: self.ApplyIceball(5))
-                elif cheat == 'big':
-                    #make the player bigger for 5 seconds
-                    self.master.after(1, lambda: self.ApplyBig(5, False))
-                elif cheat == 'slow' and 'slow' not in self.BallEffects:
-                    #can't slow down multiple times
-                    #slow down the ball for 5 seconds
-                    self.master.after(1, lambda: self.ApplySlow(5, self.BallSpeed, False))
+    def ApplyGuns(self, timecounter, bullets):
+        '''Shoots 2 bullets, every 3 seconds, 3 times
+            the bullets destroy bricks when they get in contact with them'''
+        playerPos = self.canvas.coords(self.Player)
+        if bullets != 0:
+            if timecounter == 3:
+                #create two vertically slim rectangles at the edges of the player
+                bulletWidth = 5
+                bulletHeight = 20
+                bullet1 = self.canvas.create_rectangle(playerPos[0],
+                                                       playerPos[1] + bulletHeight,
+                                                       playerPos[0] + bulletWidth,
+                                                       playerPos[1],
+                                                       width=0, fill='yellow')
+                bullet2 = self.canvas.create_rectangle(playerPos[2] - bulletWidth,
+                                                       playerPos[1] + bulletHeight,
+                                                       playerPos[2],
+                                                       playerPos[1],
+                                                       width=0, fill='yellow')
+                self.Bullets.append(bullet1)
+                self.Bullets.append(bullet2)
+                self.master.after(1, self.MoveBullets)
+                bullets -= 1
+            timecounter -= 1
+            if timecounter == 0:
+                timecounter = 3
+            self.master.after(1000, lambda: self.ApplyGuns(timecounter, bullets))
+
+    def MoveBullets(self):
+        #move every bullet in self.Bullets by 10 pixels in the y direction
+        #also destroy any bricks that they collide with
+        for bullet in self.Bullets:
+            bulletPos = self.canvas.coords(bullet)
+            #newPosY = bulletPos[1] - 10
+            #newBulletPos = [bulletPos[0], newPosY, bulletPos[2], newPosY + 20]#20 is the bulletHeight and 10 is the bulletSpeed
+            self.canvas.move(bullet, 0, -10)
+            newBulletPos = self.canvas.coords(bullet)
+            #if the bullet has exited the window frame, delete it
+            if newBulletPos[2] <= 0:
+                self.canvas.delete(bullet)
+                self.Bullets.remove(bullet)
+            #detect collision with bricks
+            for (r, row) in enumerate(self.Bricks):
+                done = False
+                for (c, col) in enumerate(row):
+                    brick = self.Bricks[r][c]
+                    if brick[1]:
+                        brickPos = self.canvas.coords(brick[0])
+                        ball_brick_collision = self.CheckCollision(brickPos, newBulletPos)
+                        if ball_brick_collision:
+                            #bullet and brick get destroyed and score is increased
+                            self.score.set("Score: "+str(int(self.score.get().split(": ")[1]) + 10))
+                            self.Bricks[r][c][1] = False
+                            self.canvas.delete(self.Bricks[r][c][0])
+                            self.canvas.delete(bullet)
+                            self.Bullets.remove(bullet)
+                            done = True
+                            break
+                if done:
+                    break
+        if len(self.Bullets) != 0:
+            self.master.after(10, self.MoveBullets)
+            
+    
+    def ApplyColours(self):
+        '''The colour of the player is changed to a random one chosen from a list of colours'''
+        playerColours = ['red', 'green', 'grey', 'pink', 'blue', 'black']
+        self.PlayerColour = random.choice(playerColours)
+        self.canvas.itemconfig(self.Player, fill=self.PlayerColour)
+                    
 
     def ApplySlow(self, timecounter, initialSpeed, applied):
         '''In this cheat, the ball speed slows down by a factor of two, making it easier for the user'''
@@ -126,21 +299,22 @@ class OneP(object):
         playerPos = self.canvas.coords(self.Player)
         if timecounter != 0:
             if not applied:
+                self.PlayerEffects.append('')
                 self.canvas.delete(self.Player)
-                self.Player = self.canvas.create_oval(playerPos[0] - (0.04*WINDOW_WIDTH),
+                self.Player = self.canvas.create_rectangle(playerPos[0] - (0.04*WINDOW_WIDTH),
                                                            WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
                                                            (0.04*WINDOW_WIDTH) + playerPos[2],
                                                            WINDOW_HEIGHT - BOTTOM_PADDING,
-                                                           width=0, fill='blue')
+                                                           width=0, fill=self.PlayerColour)
             timecounter -= 1
             self.master.after(1000, lambda: self.ApplyBig(timecounter, True))
         else:
             self.canvas.delete(self.Player)
-            self.Player = self.canvas.create_oval((0.02*WINDOW_WIDTH) + playerPos[0],
+            self.Player = self.canvas.create_rectangle((0.02*WINDOW_WIDTH) + playerPos[0],
                                                   WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
                                                   playerPos[2] - (0.02*WINDOW_WIDTH),
                                                   WINDOW_HEIGHT - BOTTOM_PADDING,
-                                                  width=0, fill='blue')
+                                                  width=0, fill=self.PlayerColour)
             
 
     def ApplyIceball(self, timecounter):
@@ -177,6 +351,7 @@ class OneP(object):
             
 
     def UpdateLevel(self):
+        print('here')
         if self.Level == 5:
             self.GameWon()
         else:
@@ -317,6 +492,11 @@ class OneP(object):
         self.end_msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 100),
                                                  text="You Won!",
                                                  font="Helvetica 60 bold italic")
+        self.EnterToLeaderboard()
+
+    def EnterToLeaderboard(self):
+        popup = LeaderboardPopup(self.master, int(self.score.get().split(": ")[1]))
+        
 
     def CheckLevelFinished(self):
         levelFinished = True
@@ -361,6 +541,7 @@ class OneP(object):
         self.end_msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 100),
                                                  text="You Lost!",
                                                  font="Helvetica 60 bold italic")
+        self.EnterToLeaderboard()
 
     def StartGame(self, event):
         if not self.GamePlaying:
@@ -446,10 +627,34 @@ class OneP(object):
         if newPosX <= WINDOW_WIDTH and self.GamePlaying and not self.GameOver:
             self.canvas.move(self.Player, PLAYER_SPEED, 0)
 
+    def CountDeadBricks(self):
+        count = 0
+        for (r, row) in enumerate(self.Bricks):
+            for (c, col) in enumerate(row):
+                if not self.Bricks[r][c][1]:
+                    count += 1
+        return count
+
+    def SaveGameBtnPressed(self):
+        self.GamePlaying = False
+        score = int(self.score.get().split(": ")[1]) - (self.CountDeadBricks() * 10)
+        level = int(self.score.get().split(": ")[1])
+        popup = SaveGamePopup(self.master, score, level)
         
 
+        
 def run():
     root = Tk()
+    #WINDOW_WIDTH = root.winfo_screenwidth()
+    #WINDOW_HEIGHT = root.winfo_screenheight()
+    
     app = OneP(root)
     root.mainloop()
+
+def load(gamename):
+    #db = shelve.open(gamename)
+    root = Tk()
+    app = OneP(root, gamename)
+    root.mainloop()
+    
 #run()
