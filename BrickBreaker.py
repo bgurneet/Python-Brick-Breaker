@@ -5,6 +5,44 @@ import Leaderboard
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 700
 
+
+class LoadGamePopup():
+    def __init__(self, master):
+        self.parent = master
+        self.master = Toplevel(master)
+        self.master.title("Load Game")
+        self.master.resizable(False, False)
+        self.canvas = Canvas(self.master,
+                             cursor='pirate',
+                             width=200,
+                             height=400,
+                             highlightthickness=0)
+        self.canvas.pack(expand=YES, fill=BOTH)
+        self.canvas.configure(background='#006666')
+        self.name = Label(self.master, text="Filename:")
+        self.name.place(relx=0.5, rely=0.0, anchor=N)
+        self.nameVal = Entry(self.master)
+        self.nameVal.place(relx=0.5, rely=0.2, anchor=CENTER)
+        self.enter = Button(self.master, text='Open', command=self.LoadGame)
+        self.enter.place(relx=0.5, rely=0.4, anchor=CENTER)
+
+    def LoadGame(self):
+        gamename = self.nameVal.get()
+        try:
+            open(gamename+'.db', 'r')
+            #file found
+            self.master.destroy()
+            self.parent.destroy()
+            OnePlayer.load(gamename)
+        except:
+            #file not found
+            msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT - 100),
+                                                 text="ERROR: FILE NOT FOUND!",
+                                                 font="Helvetica 20 bold italic")
+        
+        
+
+
 class Application(object):
     def __init__(self, master):
         self.master = master
@@ -75,7 +113,6 @@ class Application(object):
         self.master.destroy()
         OnePlayer.run()
 
-
     def BtnOneEnter(self, event):
         self.OnePlayerBtn['highlightbackground'] = '#009999'
         self.OnePlayerBtn['font'] = "Helvetica 30 italic"
@@ -84,19 +121,9 @@ class Application(object):
         self.OnePlayerBtn['highlightbackground'] = '#00e6e6'
         self.OnePlayerBtn['font'] = "Helvetica 30"
 
-    def TwoPlayerBtnPressed(self):
-        print("Two Player Pressed")
-
-    def BtnTwoEnter(self, event):
-        self.TwoPlayerBtn['highlightbackground'] = '#009999'
-        self.TwoPlayerBtn['font'] = "Helvetica 30 italic"
-        
-    def BtnTwoLeave(self, event):
-        self.TwoPlayerBtn['highlightbackground'] = '#00e6e6'
-        self.TwoPlayerBtn['font'] = "Helvetica 30"
-
     def LoadBtnPressed(self):
         print("Load Game Pressed")
+        popup = LoadGamePopup(self.master)
 
     def BtnLoadEnter(self, event):
         self.LoadBtn["highlightbackground"] = "#009999"
@@ -108,7 +135,8 @@ class Application(object):
 
     def LeaderboardBtnPressed(self):
         print("Leaderboard Pressed")
-        Leaderboard.run
+        self.master.destroy()
+        Leaderboard.run()
 
     def BtnLeaderboardEnter(self, event):
         self.LeaderboardBtn["highlightbackground"] = "#009999"

@@ -1,5 +1,6 @@
 from tkinter import *
 import pickle
+import BrickBreaker
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 700
@@ -25,8 +26,8 @@ class Leaderboard(object):
                                    relief=GROOVE,
                                    font="Helvetica 30",
                                    command=self.BackBtnPressed,
-                                   text="1 Player")
-        self.BackBtn.place(relx=0.5, rely=0.5, anchor=CENTER)
+                                   text="Main Menu")
+        self.BackBtn.place(relx=0.0, rely=0.0, anchor=NW)
         self.BackBtn.bind("<Enter>", self.BtnBackEnter)
         self.BackBtn.bind("<Leave>", self.BtnBackLeave)
 
@@ -55,7 +56,18 @@ class Leaderboard(object):
                                                      text=row,
                                                      font='Helvetica 20')
 
-    #def BackBtnPressed(self):
+    def BackBtnPressed(self):
+        self.master.destroy()
+        BrickBreaker.run()
+
+    def BtnBackEnter(self, event):
+        self.BackBtn['highlightbackground'] = '#009999'
+        self.BackBtn['font'] = "Helvetica 30 italic"
+        
+    def BtnBackLeave(self, event):
+        self.BackBtn['highlightbackground'] = '#00e6e6'
+        self.BackBtn['font'] = "Helvetica 30"
+        
         
             
             
