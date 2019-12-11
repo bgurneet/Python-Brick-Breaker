@@ -213,7 +213,7 @@ class OneP():
                     elif cheat == 'ice' and 'fire' not in self.BallEffects:
                         #apply the iceball effect for 5 seconds
                         self.master.after(1, lambda: self.ApplyIceball(5))
-                    elif cheat == 'big':
+                    elif cheat == 'big' and 'big' not in self.PlayerEffects:
                         #make the player bigger for 5 seconds
                         self.master.after(1, lambda: self.ApplyBig(5, False))
                     elif cheat == 'slow' and 'slow' not in self.BallEffects:
@@ -316,7 +316,7 @@ class OneP():
         playerPos = self.canvas.coords(self.Player)
         if timecounter != 0:
             if not applied:
-                self.PlayerEffects.append('')
+                self.PlayerEffects.append('big')
                 self.canvas.delete(self.Player)
                 self.Player = self.canvas.create_rectangle(playerPos[0] - (0.04*WINDOW_WIDTH),
                                                            WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
@@ -326,12 +326,12 @@ class OneP():
             timecounter -= 1
             self.master.after(1000, lambda: self.ApplyBig(timecounter, True))
         else:
-            self.canvas.delete(self.Player)
-            self.Player = self.canvas.create_rectangle(0.43*WINDOW_WIDTH,
-                                                   WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
-                                                   0.57*WINDOW_WIDTH,
-                                                   WINDOW_HEIGHT - BOTTOM_PADDING,
-                                                   width=0, fill=self.PlayerColour)
+            '''self.canvas.delete(self.Player)
+            self.Player = self.canvas.create_rectangle(playerPos[0] + (0.04*WINDOW_WIDTH),
+                                                       WINDOW_HEIGHT - PLAYER_HEIGHT - BOTTOM_PADDING,
+                                                       (0.04*WINDOW_WIDTH) + playerPos[2],
+                                                       WINDOW_HEIGHT - BOTTOM_PADDING,
+                                                       width=0, fill=self.PlayerColour)'''
             
 
     def ApplyIceball(self, timecounter):
