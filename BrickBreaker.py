@@ -31,17 +31,15 @@ class LoadGamePopup():
         gamename = self.nameVal.get()
         try:
             open(gamename+'.db', 'r')
-            #file found
+            # file found
             self.master.destroy()
             self.parent.destroy()
             OnePlayer.load(gamename)
         except:
-            #file not found
-            msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT - 100),
-                                                 text="ERROR: FILE NOT FOUND!",
-                                                 font="Helvetica 20 bold italic")
-        
-        
+            # file not found
+            msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT-100),
+                                          text="ERROR: FILE NOT FOUND!",
+                                          font="Helvetica 20 bold italic")
 
 
 class Application(object):
@@ -75,23 +73,23 @@ class Application(object):
         self.OnePlayerBtn.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         self.LoadBtn = Button(self.master,
-                                   cursor='trek',
-                                   background='#00e6e6',
-                                   activebackground='#009999',
-                                   relief=GROOVE,
-                                   font="Helvetica 30",
-                                   command=self.LoadBtnPressed,
-                                   text="Load Game")
+                              cursor='trek',
+                              background='#00e6e6',
+                              activebackground='#009999',
+                              relief=GROOVE,
+                              font="Helvetica 30",
+                              command=self.LoadBtnPressed,
+                              text="Load Game")
         self.LoadBtn.place(relx=0.5, rely=0.6, anchor=CENTER)
 
         self.LeaderboardBtn = Button(self.master,
-                                   cursor='trek',
-                                   background='#00e6e6',
-                                   activebackground='#009999',
-                                   relief=GROOVE,
-                                   font="Helvetica 30",
-                                   command=self.LeaderboardBtnPressed,
-                                   text="Leaderboard")
+                                     cursor='trek',
+                                     background='#00e6e6',
+                                     activebackground='#009999',
+                                     relief=GROOVE,
+                                     font="Helvetica 30",
+                                     command=self.LeaderboardBtnPressed,
+                                     text="Leaderboard")
         self.LeaderboardBtn.place(relx=0.5, rely=0.7, anchor=CENTER)
 
         self.SettingsBtn = Button(self.master,
@@ -103,7 +101,6 @@ class Application(object):
                                   command=self.SettingsBtnPressed,
                                   text="Settings")
         self.SettingsBtn.place(relx=0.5, rely=0.8, anchor=CENTER)
-        
 
     def OnePlayerBtnPressed(self):
         print("One Player Pressed")
@@ -123,8 +120,8 @@ class Application(object):
         print("Settings Pressed")
         self.master.destroy()
         Settings.run()
-        
-        
+
+
 def run():
     root = Tk()
     app = Application(root)
