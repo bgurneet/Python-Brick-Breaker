@@ -76,6 +76,30 @@ class SaveGamePopup():
             db['level'] = self.level
 
 
+class BossKeyPopup():
+    def __init__(self, master, bossKey):
+        self.master = Toplevel(master)
+        self.master.title("Work")
+        self.master.resizable(False, False)
+        self.canvas = Canvas(self.master,
+                             cursor='none',
+                             width=self.master.winfo_screenwidth(),
+                             height=self.master.winfo_screenheight(),
+                             highlightthickness=0)
+        self.canvas.pack()
+        self.canvas.configure(background='#006666')
+        bossKeyImage = PhotoImage(file='BossKeyImage.png')
+        self.master.bossKeyImage = bossKeyImage#avoid the image from being garbage collected
+        self.Boss = self.canvas.create_image(0, 0, image=bossKeyImage, anchor=NW)
+
+        self.BossKey = bossKey
+        self.master.bind(self.BossKey, self.BossKeyPressed)
+
+    def BossKeyPressed(self, event):
+        self.master.destroy()
+        
+
+
 
 class OneP():
     def __init__(self, master, gamename=None):
@@ -153,6 +177,7 @@ class OneP():
         
         self.master.bind(self.keybindings['left'], self.LeftKeyPressed)
         self.master.bind(self.keybindings['right'], self.RightKeyPressed)
+        self.master.bind(self.keybindings['boss'], self.BossKeyPressed)
         
         self.Bricks = []
         self.Level = 0
@@ -678,6 +703,11 @@ class OneP():
         score = int(self.score.get().split(": ")[1]) - (self.CountDeadBricks() * 10)
         level = int(self.score.get().split(": ")[1])
         popup = SaveGamePopup(self.master, score, level)
+
+    def BossKeyPressed(self, event):
+        self.GamePlaying = False
+        popup = BossKeyPopup(self.master, self.keybindings['boss'])
+        
         
 
         
