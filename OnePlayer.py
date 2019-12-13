@@ -183,7 +183,7 @@ class OneP():
     master: Tk object which will be the main game window
     gamename: (optional) provided when loading a game
 
-    Attributes:
+    Attributes
     ----------
     self.gamename: gamename parameter is stored here
     self.master: master parameter is stored here

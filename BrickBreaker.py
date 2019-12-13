@@ -3,11 +3,28 @@ import OnePlayer
 import Leaderboard
 import Settings
 
+# constants are declared here
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 700
 
 
 class LoadGamePopup():
+    '''
+    Creates a popup that allows the user to enter the filename of the game
+    that they would like to load.
+
+    Parameters
+    ----------
+    master: Tk() object that this popup belongs to
+
+    Attributes:
+    self.parent: the master parameter is stored here
+    self.master: the popup window
+    self.canvas: the canvas for the popup window
+    self.name: Label thats says "Filename:"
+    self.nameVal: Entry object that allows the user to enter filename
+    self.enter: Button that calls self.LoadGame() when clicked on
+    '''
     def __init__(self, master):
         self.parent = master
         self.master = Toplevel(master)
@@ -28,21 +45,47 @@ class LoadGamePopup():
         self.enter.place(relx=0.5, rely=0.4, anchor=CENTER)
 
     def LoadGame(self):
+        '''
+        Used to open the game with the loaded contents
+        '''
+        # get the filename entered by the user
         gamename = self.nameVal.get()
         try:
+            # first check if a file with such a name exists in the current
+            # working directory
             open(gamename+'.db', 'r')
             # file found
+            # destory main menu and the popup
             self.master.destroy()
             self.parent.destroy()
+            # load the game
             OnePlayer.load(gamename)
         except:
             # file not found
-            msg = self.canvas.create_text((WINDOW_WIDTH/2, WINDOW_HEIGHT-100),
+            # display an appropriate error message
+            msg = self.canvas.create_text((100, 300),
                                           text="ERROR: FILE NOT FOUND!",
-                                          font="Helvetica 20 bold italic")
+                                          font="Helvetica 10 bold italic")
 
 
 class Application(object):
+    '''
+    The main menu of the game
+
+    Parameters
+    ----------
+    master: Tk object which will be the main menu window
+
+    Attributes
+    ----------
+    self.master: the master parameter is stored here
+    self.canvas: the Canvas for the main menu window
+    self.title_label: Displays the title of the game in a Label
+    self.OnePlayerBtn: Calls the self.OnePlayerBtnPressed function when pressed
+    self.LoadBtn: calls the self.LoadBtnPressed function when pressed
+    self.LeaderboardBtn: calls the self.LeaderboardBtnPressed function
+    self.SettingsBtn: calls the self.SettingsBtnPressed function
+    '''
     def __init__(self, master):
         self.master = master
         self.master.title("Brick Breaker - Menu")
@@ -69,7 +112,7 @@ class Application(object):
                                    relief=GROOVE,
                                    font="Helvetica 30",
                                    command=self.OnePlayerBtnPressed,
-                                   text="1 Player")
+                                   text="Play")
         self.OnePlayerBtn.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         self.LoadBtn = Button(self.master,
@@ -99,30 +142,41 @@ class Application(object):
                                   relief=GROOVE,
                                   font="Helvetica 30",
                                   command=self.SettingsBtnPressed,
-                                  text="Settings")
+                                  text="Controls")
         self.SettingsBtn.place(relx=0.5, rely=0.8, anchor=CENTER)
 
     def OnePlayerBtnPressed(self):
-        print("One Player Pressed")
+        '''
+        Destroys the current window and launches the game
+        '''
         self.master.destroy()
         OnePlayer.run()
 
     def LoadBtnPressed(self):
-        print("Load Game Pressed")
+        '''
+        Opens the LoadGamePopup on top of the current window
+        '''
         popup = LoadGamePopup(self.master)
 
     def LeaderboardBtnPressed(self):
-        print("Leaderboard Pressed")
+        '''
+        Destroys the current window and opens the leaderboard
+        '''
         self.master.destroy()
         Leaderboard.run()
 
     def SettingsBtnPressed(self):
-        print("Settings Pressed")
+        '''
+        Destroys the current window and opens the settings
+        '''
         self.master.destroy()
         Settings.run()
 
 
 def run():
+    '''
+    This function is called to launch the main menu window
+    '''
     root = Tk()
     app = Application(root)
     root.mainloop()
