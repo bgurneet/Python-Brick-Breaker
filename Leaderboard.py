@@ -20,13 +20,13 @@ class Leaderboard(object):
         self.canvas.configure(background='#006666')
 
         self.BackBtn = Button(self.master,
-                                   cursor='trek',
-                                   background='#00e6e6',
-                                   activebackground='#009999',
-                                   relief=GROOVE,
-                                   font="Helvetica 30",
-                                   command=self.BackBtnPressed,
-                                   text="Main Menu")
+                              cursor='trek',
+                              background='#00e6e6',
+                              activebackground='#009999',
+                              relief=GROOVE,
+                              font="Helvetica 30",
+                              command=self.BackBtnPressed,
+                              text="Main Menu")
         self.BackBtn.place(relx=0.0, rely=0.0, anchor=NW)
         self.BackBtn.bind("<Enter>", self.BtnBackEnter)
         self.BackBtn.bind("<Leave>", self.BtnBackLeave)
@@ -47,10 +47,10 @@ class Leaderboard(object):
                                                  text=row_title_text,
                                                  font='Helvetica 20')
         for (index, data) in enumerate(sorted_data):
-            number = str(index+1).zfill(3)#.zfill(3)[:4]
-            name = data[0][:10]#.ljust(10)[:10]
-            score = str(data[1]).zfill(3)#.ljust(10)[:10]
-            row = number +'\t'+ name +'\t'+ score
+            number = str(index+1).zfill(3)  # .zfill(3)[:4]
+            name = data[0][:10]  # .ljust(10)[:10]
+            score = str(data[1]).zfill(3)  # .ljust(10)[:10]
+            row = number + '\t' + name + '\t' + score
             currentY += 50
             self.row_label = self.canvas.create_text((300, currentY),
                                                      text=row,
@@ -63,18 +63,10 @@ class Leaderboard(object):
     def BtnBackEnter(self, event):
         self.BackBtn['highlightbackground'] = '#009999'
         self.BackBtn['font'] = "Helvetica 30 italic"
-        
+
     def BtnBackLeave(self, event):
         self.BackBtn['highlightbackground'] = '#00e6e6'
         self.BackBtn['font'] = "Helvetica 30"
-        
-        
-            
-            
-            
-        
-
-
 
 
 def run():
